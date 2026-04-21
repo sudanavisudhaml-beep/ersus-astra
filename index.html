@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ERSUS - ESG Ready Smart Utility System</title>
+  
+  <!-- Tailwind CSS Engine via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Phosphor Icons (Sangat Ringan) -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  
+  <!-- React & ReactDOM via CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  
+  <!-- Babel Standalone (Untuk membaca sintaks React di dalam file HTML) -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    html { scroll-behavior: smooth; }
+  </style>
+</head>
+<body class="bg-slate-50">
+  <!-- Tempat Aplikasi React Dimuat -->
+  <div id="root"></div>
+
+  <!-- Kode React App -->
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    const SUBPAGES = [
+      { id: 1, title: "Fundamental Framework", desc: "17 Fundamental dan 4 Framing Besar ERSUS.", icon: "ph-fill ph-target", bg: "bg-rose-50", borderColor: "border-rose-100", iconColor: "text-rose-500" },
+      { id: 2, title: "Energy System Model", desc: "Flow energi, SEU, asset state, load, dan context drivers.", icon: "ph-fill ph-stack", bg: "bg-blue-50", borderColor: "border-blue-100", iconColor: "text-blue-500" },
+      { id: 3, title: "Intelligence & Analysis Model", desc: "Baseline, EnPI, anomaly, predictive maintenance, redundancy logic.", icon: "ph-fill ph-brain", bg: "bg-emerald-50", borderColor: "border-emerald-100", iconColor: "text-emerald-500" },
+      { id: 4, title: "Business Impact & Value Case", desc: "Saving levers, cost avoidance, right-sizing, productivity, resilience.", icon: "ph-fill ph-trend-up", bg: "bg-amber-50", borderColor: "border-amber-100", iconColor: "text-amber-500" },
+      { id: 5, title: "Workstream & Build Arch.", desc: "Module, integration, data domains, logic layer, reporting layer.", icon: "ph-fill ph-briefcase", bg: "bg-indigo-50", borderColor: "border-indigo-100", iconColor: "text-indigo-500" },
+      { id: 6, title: "Governance, KPI & Improvement", desc: "KPI, management review, compliance, corrective action, replication.", icon: "ph-fill ph-scales", bg: "bg-purple-50", borderColor: "border-purple-100", iconColor: "text-purple-500" }
+    ];
+
+    const Navbar = ({ activePage, setActivePage }) => {
+      const [isMenuOpen, setIsMenuOpen] = useState(false);
+      return (
+        <nav className="fixed w-full bg-white/95 backdrop-blur-md shadow-sm z-50 border-b border-slate-200 transition-all">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center h-20">
+              <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setActivePage(0)}>
+                <div className="bg-blue-600 p-2 rounded-lg shadow-sm">
+                  <i className="ph-fill ph-leaf text-white text-2xl"></i>
+                </div>
+                <div>
+                  <span className="font-bold text-2xl text-blue-900 tracking-tight">ERSUS</span>
+                  <p className="text-[9px] font-bold text-green-600 tracking-widest uppercase mt-[-4px]">ESG Ready Smart Utility System</p>
+                </div>
+              </div>
+              
+              <div className="hidden md:flex space-x-8 items-center">
+                {activePage === 0 ? (
+                  <>
+                    <a href="#why" className="text-sm font-medium text-slate-600 hover:text-blue-600">Why ERSUS</a>
+                    <a href="#impact" className="text-sm font-medium text-slate-600 hover:text-blue-600">Business Impact</a>
+                    <a href="#workstreams" className="text-sm font-medium text-slate-600 hover:text-blue-600">Workstreams</a>
+                    <button onClick={() => {
+                      const hub = document.getElementById('hub');
+                      if(hub) hub.scrollIntoView({behavior: 'smooth'});
+                    }} className="text-sm font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 bg-blue-50 px-4 py-2 rounded-full">
+                      Direktori Detail <i className="ph-bold ph-caret-right"></i>
+                    </button>
+                  </>
+                ) : (
+                  <button onClick={() => setActivePage(0)} className="flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-blue-600 bg-slate-100 px-4 py-2 rounded-full transition-colors">
+                    <i className="ph-bold ph-arrow-left"></i> Beranda ERSUS
+                  </button>
+                )}
+              </div>
+              
+              <div className="md:hidden flex items-center">
+                <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="text-slate-600 text-2xl">
+                  {isMenuOpen ? <i className="ph-bold ph-x"></i> : <i className="ph-bold ph-list"></i>}
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          {isMenuOpen && (
+            <div className="md:hidden bg-white border-t border-slate-100 shadow-xl absolute w-full">
+              <div className="px-4 pt-2 pb-6 space-y-1">
+                 <button onClick={() => { setActivePage(0); setIsMenuOpen(false); }} className="block w-full text-left px-3 py-3 text-base font-bold text-blue-600 hover:bg-blue-50 rounded-md">Kembali ke Beranda Utama</button>
+              </div>
+            </div>
+          )}
+        </nav>
+      );
+    };
+
+    const SectionHeading = ({ title, subtitle }) => (
+      <div className="mb-12 md:mb-16">
+        <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">{title}</h2>
+        {subtitle && <p className="text-lg text-slate-600 max-w-3xl">{subtitle}</p>}
+      </div>
+    );
+
+    const LandingPage = ({ setActivePage }) => {
+      return (
+        <div className="pt-20">
+          <section className="relative pt-20 pb-24 lg:pt-32 lg:pb-32 overflow-hidden bg-gradient-to-br from-slate-900 via-blue-900 to-green-900">
+            <div className="absolute inset-0 bg-black opacity-10"></div>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+              <div className="max-w-4xl">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 text-white text-xs font-bold uppercase tracking-wider mb-6 backdrop-blur-sm">
+                  <i className="ph-bold ph-activity text-green-400 text-base"></i> Astra Energy and Utility Intelligence Platform
+                </div>
+                <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-white leading-tight mb-8">
+                  Mewujudkan <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-300">EnMS</span> dalam Satu Platform Digital.
+                </h1>
+                <p className="text-xl md:text-2xl text-blue-100 mb-8 leading-relaxed font-light">
+                  ERSUS adalah platform intelligence energi dan utilitas Astra yang mewujudkan Sistem Manajemen Energi perusahaan ke dalam satu platform digital untuk memantau, menganalisis, mengendalikan, dan meningkatkan kinerja energi secara berkelanjutan.
+                </p>
+                <div className="p-6 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-sm mb-10">
+                  <p className="text-lg text-white font-medium italic">
+                    "ERSUS tidak dibangun hanya untuk memonitor energi. ERSUS dibangun untuk menurunkan biaya operasional, meningkatkan keandalan aset, mengoptimalkan keputusan maintenance dan kapasitas, serta menciptakan tata kelola energi yang scalable di seluruh aset Astra."
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-3 mb-10">
+                  {['Digital EnMS Backbone', 'Operational Intelligence', 'Business Optimization', 'Scalable Governance'].map((badge, i) => (
+                    <span key={i} className="px-4 py-2 bg-blue-800/50 text-blue-200 text-sm font-semibold rounded-full border border-blue-700/50">{badge}</span>
+                  ))}
+                </div>
+                <button onClick={() => {
+                    const hub = document.getElementById('hub');
+                    if(hub) hub.scrollIntoView({behavior: 'smooth'});
+                  }} 
+                  className="bg-green-500 hover:bg-green-600 text-white px-8 py-4 rounded-full font-bold text-lg transition-all shadow-lg shadow-green-500/30 flex items-center gap-2">
+                  Jelajahi Arsitektur ERSUS <i className="ph-bold ph-arrow-right"></i>
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <section id="hub" className="py-20 bg-slate-100 border-b border-slate-200">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <SectionHeading title="Direktori Dokumen ERSUS" subtitle="Pilih sub-halaman di bawah ini untuk mendalami detail fundamental, model, arsitektur, dan peta jalan implementasi ERSUS." />
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {SUBPAGES.map((page) => (
+                  <div key={page.id} onClick={() => setActivePage(page.id)} className="group cursor-pointer flex flex-col bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-lg hover:border-blue-400 hover:-translate-y-1 transition-all duration-300">
+                    <div className="flex justify-between items-start mb-4">
+                      <div className={`p-3 rounded-xl ${page.bg} border ${page.borderColor}`}>
+                        <i className={`${page.icon} ${page.iconColor} text-3xl`}></i>
+                      </div>
+                      <div className="bg-slate-50 p-1.5 rounded-full text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-500 transition-colors">
+                        <i className="ph-bold ph-arrow-right -rotate-45"></i>
+                      </div>
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
+                      <span className="text-slate-400 font-mono text-sm">{page.id}.</span> {page.title}
+                    </h3>
+                    <p className="text-slate-600 text-sm leading-relaxed flex-grow">{page.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <section id="why" className="py-24 bg-white">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <SectionHeading title="Mengapa ERSUS Dibutuhkan?" subtitle="Banyak organisasi memiliki data energi, tetapi belum memiliki sistem yang mampu mengubah data tersebut menjadi keputusan yang menurunkan biaya, menjaga operasi, dan memperkuat governance." />
+              <div className="grid md:grid-cols-2 gap-8">
+                {[
+                  { t: "Monitoring is still passive", d: "Data tersedia, tetapi belum cukup membantu memprioritaskan tindakan, mendeteksi risiko, atau mengarahkan intervensi.", i: "ph-bold ph-magnifying-glass" },
+                  { t: "Decisions are human-dependent", d: "Banyak pemborosan, idle operation, dan anomali baru terlihat setelah menimbulkan dampak kerugian.", i: "ph-fill ph-warning" },
+                  { t: "Data lacks management intelligence", d: "Konsumsi energi belum terhubung dengan baseline, maintenance, redundancy, atau right-sizing decision.", i: "ph-fill ph-lightbulb" },
+                  { t: "Asset complexity is increasing", d: "Semakin beragam jenis aset, semakin dibutuhkan platform yang standar, scalable, dan terpusat lintas site.", i: "ph-fill ph-stack" }
+                ].map((item, i) => (
+                  <div key={i} className="flex gap-4 p-6 bg-slate-50 rounded-2xl border border-slate-100">
+                    <div className="bg-white p-3 rounded-xl shadow-sm border border-slate-200 h-fit text-blue-600 text-2xl">
+                      <i className={item.i}></i>
+                    </div>
+                    <div>
+                      <h4 className="text-xl font-bold text-slate-900 mb-2">{item.t}</h4>
+                      <p className="text-slate-600 leading-relaxed">{item.d}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <section className="py-24 bg-slate-900 text-white">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="text-center mb-16">
+                <h2 className="text-3xl md:text-4xl font-bold mb-4">4 Peran Strategis ERSUS</h2>
+                <p className="text-slate-400 text-lg max-w-2xl mx-auto">ERSUS harus dipahami bukan sebagai dashboard, tetapi sebagai sistem penggerak bisnis utama.</p>
+              </div>
+              <div className="grid md:grid-cols-2 gap-8">
+                {[
+                  { t: "Digital EnMS Backbone", desc: "Menerjemahkan Energy Management System ke dalam sistem digital yang dapat dijalankan, dipantau, dan ditingkatkan.", quote: "ERSUS makes Energy Management System executable.", i: "ph-fill ph-target" },
+                  { t: "Operational Intelligence System", desc: "Membaca perilaku energi, status aset, beban, dan kondisi operasi untuk memahami apa yang benar-benar terjadi.", quote: "ERSUS turns energy and asset signals into operational intelligence.", i: "ph-fill ph-brain" },
+                  { t: "Business Optimization Engine", desc: "Mengubah visibility energi menjadi penghematan biaya, peningkatan reliability, dan keputusan aset yang tepat.", quote: "ERSUS converts energy visibility into measurable business value.", i: "ph-fill ph-trend-up" },
+                  { t: "Governance & Improvement Platform", desc: "Mendukung reporting, audit, corrective action, dan standardisasi lintas aset untuk perbaikan berkelanjutan.", quote: "ERSUS institutionalizes energy governance across Astra assets.", i: "ph-fill ph-scales" }
+                ].map((f, i) => (
+                  <div key={i} className="bg-slate-800/50 p-8 rounded-2xl border border-slate-700 relative overflow-hidden group">
+                    <div className="absolute -right-4 -top-4 opacity-5 transform group-hover:scale-110 transition-transform duration-500 text-[200px]">
+                      <i className={f.i}></i>
+                    </div>
+                    <h3 className="text-2xl font-bold text-white mb-3 relative z-10 flex items-center gap-3">
+                      <span className="text-blue-400">{i+1}.</span> {f.t}
+                    </h3>
+                    <p className="text-slate-300 mb-6 relative z-10">{f.desc}</p>
+                    <div className="bg-blue-900/50 border-l-4 border-blue-500 p-4 rounded-r-lg relative z-10">
+                      <p className="text-blue-200 font-medium italic">"{f.quote}"</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <section className="py-24 bg-slate-50">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="grid lg:grid-cols-2 gap-16">
+                <div>
+                  <SectionHeading title="What ERSUS Sees" subtitle="Membaca sistem dan operasi, bukan sekadar alat ukur." />
+                  <div className="space-y-4">
+                    {[
+                      { n: "Consumption", d: "Energi & utilitas oleh aset/proses/area." },
+                      { n: "Operating Status", d: "Running, standby, idle, trip, duty, backup." },
+                      { n: "Load & Utilization", d: "Beban aktual & distribusi kapasitas aset." },
+                      { n: "Asset Condition", d: "Parameter indikasi performa & degradasi." },
+                      { n: "Safety & Alarms", d: "Interlock & kondisi abnormal." },
+                      { n: "Maintenance State", d: "Histori & ketepatan frekuensi maintenance." },
+                      { n: "Operational Context", d: "Produksi, okupansi, jadwal, event." }
+                    ].map((item, i) => (
+                      <div key={i} className="flex items-start gap-3 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                        <i className="ph-fill ph-database text-blue-500 text-xl flex-shrink-0 mt-0.5"></i>
+                        <div>
+                          <h4 className="font-bold text-slate-800">{item.n}</h4>
+                          <p className="text-sm text-slate-600">{item.d}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <SectionHeading title="What ERSUS Analyzes" subtitle="Mengubah sinyal menjadi management intelligence." />
+                  <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm h-full flex flex-col justify-between">
+                    <ul className="space-y-4">
+                      {["Significant Energy Use (SEU)", "Energy Performance Indicator (EnPI) & Baseline (EnB)", "Actual vs Baseline Deviation", "Anomaly & Hidden Waste", "Idle or Excessive Load", "Over / Under Maintenance", "Predictive Maintenance Signals", "Redundancy & Capacity Adequacy"].map((item, i) => (
+                        <li key={i} className="flex items-center gap-3 text-slate-700 font-medium pb-4 border-b border-slate-100 last:border-0 last:pb-0">
+                          <i className="ph-fill ph-brain text-emerald-500 text-xl flex-shrink-0"></i> {item}
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="mt-8 bg-blue-50 text-blue-800 p-4 rounded-xl border border-blue-100 text-sm font-semibold">
+                      Dengan analisis ini, ERSUS membantu organisasi mengetahui bukan hanya *apa* yang boros, tetapi *mengapa* terjadi dan apa prioritas perbaikannya.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section id="impact" className="py-24 bg-white border-y border-slate-200">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <SectionHeading title="Business Impact" subtitle="Nilai ERSUS yang terbaca langsung dalam bahasa bisnis dan bottom line perusahaan." />
+              <div className="grid md:grid-cols-3 gap-6 mb-12">
+                {[
+                  { t: "OPEX Optimization", d: "Menurunkan biaya utilitas dengan memangkas idle load, leakage, hidden waste, & mismatch supply-demand.", i: "ph-fill ph-trend-up", color: "text-green-500" },
+                  { t: "Maintenance Precision", d: "Mengurangi intervensi tak perlu & mendeteksi aset memburuk sebelum failure.", i: "ph-fill ph-wrench", color: "text-blue-500" },
+                  { t: "Asset Right-Sizing", d: "Memastikan kapasitas aset proporsional terhadap kebutuhan aktual dan risiko bisnis.", i: "ph-fill ph-hard-drives", color: "text-amber-500" },
+                  { t: "Workforce Leverage", d: "Mengurangi pemantauan manual via alert, prioritization, & automasi bertahap.", i: "ph-fill ph-users", color: "text-indigo-500" },
+                  { t: "Investment Quality", d: "Meningkatkan kualitas keputusan retrofit, replacement, procurement, & investasi aset.", i: "ph-fill ph-chart-bar", color: "text-purple-500" },
+                  { t: "Governance", d: "Menjaga integritas data untuk ESG, audit kesiapan, & replikasi best-practice.", i: "ph-fill ph-scales", color: "text-rose-500" }
+                ].map((b, i) => (
+                  <div key={i} className="p-6 bg-slate-50 border border-slate-100 rounded-xl hover:shadow-md transition-shadow">
+                    <div className="bg-white w-12 h-12 rounded-lg flex items-center justify-center shadow-sm mb-4 border border-slate-100">
+                      <i className={`${b.i} ${b.color} text-2xl`}></i>
+                    </div>
+                    <h4 className="font-bold text-slate-900 mb-2">{b.t}</h4>
+                    <p className="text-sm text-slate-600 leading-relaxed">{b.d}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="bg-slate-900 text-white p-8 rounded-2xl text-center shadow-xl">
+                <p className="text-lg md:text-xl font-medium leading-relaxed max-w-4xl mx-auto">
+                  "Sebelum ERSUS, pemborosan, inefisiensi, dan ketidaktepatan keputusan aset tidak terlihat. Dengan ERSUS, potensi penghematan dan penghindaran biaya dapat ditangkap dan dikelola secara sistematis."
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section id="workstreams" className="py-24 bg-slate-50">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <SectionHeading title="What We Build: 6 Workstreams" subtitle="Menerjemahkan fundamental ERSUS ke dalam arsitektur pembangunan sistem dan backlog development." />
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[
+                  { id: "WS1", t: "EnMS Context, Scope & Profiling", d: "Membangun konteks, scope, boundary, criticality, dan peta sistem energi awal.", i: "ph-fill ph-target" },
+                  { id: "WS2", t: "Data Foundation & Integration", d: "Membangun fondasi data dan integrasi lintas sumber, aset, dan state operasi.", i: "ph-fill ph-database" },
+                  { id: "WS3", t: "Energy Intelligence & Modeling", d: "Membangun logic SEU, EnPI, baseline, anomaly, dan energy performance insight.", i: "ph-fill ph-brain" },
+                  { id: "WS4", t: "Health & Maintenance Intelligence", d: "Membangun logic asset health, maintenance precision, dan predictive maintenance.", i: "ph-fill ph-shield-check" },
+                  { id: "WS5", t: "Optimization, Action & Decision", d: "Membangun alert, dispatch, optimization logic, right-sizing analysis, resilience.", i: "ph-fill ph-sliders-horizontal" },
+                  { id: "WS6", t: "Governance, Report & Improvement", d: "Membangun dashboard manajemen, reporting, compliance support, dan improvement loop.", i: "ph-fill ph-scales" }
+                ].map((ws, i) => (
+                  <div key={i} className="bg-white border border-slate-200 rounded-xl p-6 relative overflow-hidden group hover:border-blue-500 transition-colors">
+                    <div className="text-5xl font-black text-slate-100 absolute -right-4 -bottom-4 group-hover:text-blue-50 transition-colors">{ws.id}</div>
+                    <div className="relative z-10">
+                      <div className="text-blue-600 mb-4 text-3xl"><i className={ws.i}></i></div>
+                      <h4 className="font-bold text-lg text-slate-900 mb-2">{ws.t}</h4>
+                      <p className="text-sm text-slate-600">{ws.d}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <section className="py-24 bg-white border-t border-slate-200">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="text-center mb-16">
+                <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Roadmap to Scale</h2>
+                <p className="text-slate-600 text-lg max-w-2xl mx-auto">Berkembang dari fondasi EnMS menuju platform intelligence dan governance lintas aset.</p>
+              </div>
+              <div className="relative max-w-4xl mx-auto">
+                <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-1 bg-slate-100 -translate-x-1/2"></div>
+                {[
+                  { p: "Phase 1", t: "Foundation & Energy Profiling", d: "Menetapkan scope, boundary, asset profile, SEU awal, data requirement, dan model risiko." },
+                  { p: "Phase 2", t: "Visibility & State Awareness", d: "Membangun monitoring, state visibility, baseline awal, dan reporting dasar." },
+                  { p: "Phase 3", t: "Intelligence & Optimization", d: "Menerapkan anomaly detection, asset health insight, predictive signals, dan optimization support." },
+                  { p: "Phase 4", t: "Scale & Governance", d: "Melakukan standardisasi, cross-site replication, portfolio benchmarking, dan governance lintas Astra." }
+                ].map((phase, i) => (
+                  <div key={i} className={`relative flex flex-col md:flex-row items-center mb-12 last:mb-0 ${i % 2 === 0 ? 'md:flex-row-reverse' : ''}`}>
+                    <div className="md:w-1/2"></div>
+                    <div className="absolute left-1/2 -translate-x-1/2 w-8 h-8 bg-blue-600 rounded-full border-4 border-white shadow-md z-10 text-white flex items-center justify-center font-bold text-sm">{i+1}</div>
+                    <div className={`md:w-1/2 p-6 bg-slate-50 border border-slate-200 rounded-2xl w-full ${i % 2 === 0 ? 'md:ml-12' : 'md:mr-12'}`}>
+                      <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">{phase.p}</span>
+                      <h4 className="text-xl font-bold text-slate-900 mt-1 mb-2">{phase.t}</h4>
+                      <p className="text-slate-600">{phase.d}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+          
+          <section className="py-20 bg-gradient-to-r from-blue-900 to-slate-900 text-center px-4">
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-6 max-w-4xl mx-auto leading-relaxed">
+              "ERSUS adalah perwujudan digital dari Sistem Manajemen Energi perusahaan yang mengubah data energi, status aset, dan konteks operasi menjadi intelligence, tindakan, dan keputusan bisnis untuk menurunkan biaya, meningkatkan reliability, dan memperkuat governance lintas aset."
+            </h2>
+            <button onClick={() => window.scrollTo({top:0, behavior:'smooth'})} className="mt-8 bg-white text-blue-900 px-6 py-3 rounded-full font-bold hover:bg-slate-100 transition-colors">
+              Kembali ke Atas
+            </button>
+          </section>
+        </div>
+      );
+    };
+
+    const SubpageLayout = ({ pageId, setActivePage, children }) => {
+      const pageData = SUBPAGES.find(p => p.id === pageId);
+      useEffect(() => { window.scrollTo(0, 0); }, [pageId]);
+      if (!pageData) return null;
+
+      return (
+        <div className="pt-28 pb-20 min-h-screen bg-slate-50">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <button onClick={() => setActivePage(0)} className="mb-8 flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-blue-600 transition-colors">
+              <i className="ph-bold ph-arrow-left"></i> Kembali ke Direktori Dokumen (Beranda)
+            </button>
+            <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+              <div className="bg-gradient-to-r from-slate-900 to-blue-900 px-8 py-10 text-white flex items-center gap-6">
+                <div className="bg-white/10 p-4 rounded-2xl backdrop-blur-sm border border-white/20">
+                  <i className={`${pageData.icon} text-4xl text-white`}></i>
+                </div>
+                <div>
+                  <p className="text-blue-200 font-bold uppercase tracking-widest text-xs mb-2">ERSUS Document Reference</p>
+                  <h1 className="text-3xl md:text-4xl font-bold">{pageData.title}</h1>
+                </div>
+              </div>
+              <div className="p-8 md:p-12">
+                {children}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // Subpage Contents
+    const Page1_Fundamental = () => (
+      <div className="space-y-12">
+        <section>
+          <h2 className="text-2xl font-bold text-slate-900 mb-6 border-b pb-2">A. 17 Fundamental ERSUS</h2>
+          <p className="text-slate-600 mb-6">Pondasi konsep berpikir ERSUS sebagai perwujudan Sistem Manajemen Energi (EnMS).</p>
+          <div className="space-y-4">
+            {[
+              { title: "Perwujudan digital dari EnMS", desc: "Digital layer yang membuat EnMS dapat dijalankan, diukur, dan ditingkatkan secara nyata." },
+              { title: "Optimasi OPEX & Keandalan", desc: "Menurunkan biaya energi, meningkatkan efisiensi operasi, dan menjaga continuity. Dampak ESG adalah hasil akhir, efisiensi adalah bahasa utama." },
+              { title: "Dimulai dari konteks bisnis", desc: "Berangkat dari tujuan bisnis, proses inti, risiko, stakeholder, scope, dan boundary. Bukan dari alat." },
+              { title: "Sistem lintas aset", desc: "Relevan untuk listrik, fuel, steam, heat, dan udara tekan pada gedung, pabrik, warehouse, dan workshop." },
+              { title: "Pemetaan aliran energi", desc: "Menjawab: energi apa dipakai, di mana, oleh proses apa, dalam pola apa." },
+              { title: "Identifikasi SEU (Significant Energy Use)", desc: "Menunjukkan area/proses dengan energi dominan & potensi hemat tertinggi." },
+              { title: "Membaca status operasi", desc: "Tahu apakah aset running, standby, idle, trip, overloaded, duty, atau backup." },
+              { title: "Menangkap 7 domain data", desc: "Consumption, status, load, health, alarms, maintenance state, dan context." },
+              { title: "EnPI dan baseline valid", desc: "Normalisasi konsumsi terhadap driver operasional agar saving terbukti objektif." },
+              { title: "Menemukan pemborosan tersembunyi", desc: "Menunjukkan idle load, leakage, hidden loss, dan mismatch supply-demand." },
+              { title: "Membedakan over/under maintenance", desc: "Melihat aset yang terlalu sering atau justru kurang dirawat." },
+              { title: "Predictive maintenance", desc: "Mengubah pola energi/alarm menjadi sinyal dini penurunan performa." },
+              { title: "Evaluasi kecukupan kapasitas", desc: "Melihat apakah backup/redundancy terlalu banyak/sedikit sesuai risiko." },
+              { title: "Operational control nyata", desc: "Membantu optimasi jadwal, setpoint, standby-duty, dan idle shutdown." },
+              { title: "Keputusan desain & right-sizing", desc: "Data untuk keputusan tambah aset, retrofit, spesifikasi, dan investasi." },
+              { title: "Informasi siap untuk governance", desc: "Sumber untuk report, audit trail, corrective action, dan review manajemen." },
+              { title: "Diukur dari dampak bisnis", desc: "Keberhasilan = turun OPEX, naik availability, maintenance tepat, hindari aset tak perlu." }
+            ].map((item, i) => (
+              <div key={i} className="flex gap-4">
+                <div className="text-blue-500 font-bold font-mono mt-0.5">{i+1}.</div>
+                <div>
+                  <h4 className="font-bold text-slate-800">{item.title}</h4>
+                  <p className="text-slate-600 text-sm">{item.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+        <section>
+          <h2 className="text-2xl font-bold text-slate-900 mb-6 border-b pb-2">B. 4 Framing Besar</h2>
+          <div className="grid md:grid-cols-2 gap-6">
+            {[
+              { t: "1. Digital EnMS Backbone", d: "Menerjemahkan EnMS menjadi sistem yang bisa dijalankan.", q: "ERSUS makes EnMS executable." },
+              { t: "2. Operational Intelligence", d: "Membaca perilaku energi & kondisi operasi menyeluruh.", q: "Turns signals into intelligence." },
+              { t: "3. Business Optimization", d: "Menghasilkan saving, reliability, right-sizing & resilience.", q: "Converts visibility into business value." },
+              { t: "4. Governance Platform", d: "Mendukung reporting, audit, dan standardisasi lintas aset.", q: "Institutionalizes energy governance." }
+            ].map((f, i) => (
+              <div key={i} className="bg-slate-50 p-6 rounded-xl border border-slate-200">
+                <h4 className="font-bold text-slate-900 mb-2">{f.t}</h4>
+                <p className="text-sm text-slate-600 mb-4">{f.d}</p>
+                <p className="text-xs font-bold text-blue-600 uppercase tracking-wide bg-blue-100 p-2 rounded inline-block">"{f.q}"</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+    );
+
+    const Page2_SystemModel = () => (
+      <div className="space-y-8">
+        <p className="text-lg text-slate-600">Pemodelan arsitektur informasi ERSUS untuk memahami aliran energi, SEU, dan state operasi yang harus dibaca oleh sistem (What ERSUS Sees).</p>
+        <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+          <h3 className="font-bold text-xl text-blue-900 border-b pb-3 mb-4 flex items-center gap-2"><i className="ph-bold ph-magnifying-glass"></i> 7 Data Domains</h3>
+          <ul className="space-y-4">
+            {[
+              { n: "Energy & Utility Consumption", d: "Energi dan utilitas yang dipakai oleh aset, proses, atau area (Listrik, Air, Gas, dll)." },
+              { n: "Operating Status", d: "Status operasi sistem (running, standby, idle, trip, duty, backup)." },
+              { n: "Load & Utilization", d: "Beban aktual, utilisasi kapasitas, dan distribusi beban antar kelompok aset." },
+              { n: "Asset Condition & Health", d: "Parameter fisik indikator degradasi (Suhu, Vibrasi, Tekanan)." },
+              { n: "Safety & Critical Alarm", d: "Alarm, interlock, dan kondisi abnormal (Trip, Overheat)." },
+              { n: "Maintenance State", d: "Status pemeliharaan terkini, histori intervensi, PM schedules." },
+              { n: "Operational Context", d: "Faktor penggerak eksternal (Produksi pabrik, okupansi gedung, event)." }
+            ].map((item, i) => (
+              <li key={i} className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 p-3 bg-slate-50 rounded-lg">
+                <span className="font-bold text-slate-800 md:w-1/3">{item.n}</span>
+                <span className="text-sm text-slate-600 md:w-2/3">{item.d}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    );
+
+    const Page3_Intelligence = () => (
+      <div className="space-y-8">
+        <p className="text-lg text-slate-600">Model analitik ERSUS yang mengubah data dan sinyal mentah menjadi rekomendasi dan insight (What ERSUS Analyzes).</p>
+        <div className="grid md:grid-cols-2 gap-6">
+          {[
+            { t: "SEU & EnPI Engine", d: "Identifikasi Significant Energy Use dan pembuatan Energy Performance Indicator yang dinormalisasi dengan operational context." },
+            { t: "Baseline Deviation", d: "Analisis komparasi Actual vs Baseline (EnB) untuk membuktikan saving atau mendeteksi kebocoran energi." },
+            { t: "Anomaly & Hidden Waste", d: "Mendeteksi idle load saat area kosong, leakage utilitas, dan mismatch antara supply chiller/genset dengan demand." },
+            { t: "Maintenance Precision", d: "Algoritma untuk membedakan aset yang over-maintained (buang biaya) vs under-maintained (berisiko rusak)." },
+            { t: "Predictive Signals", d: "Menerjemahkan pola konsumsi energi dan frekuensi alarm menjadi early warning penurunan performa." },
+            { t: "Redundancy Adequacy", d: "Analisis kecukupan kapasitas: apakah installed capacity atau sistem backup kita terlalu besar (over-sized)?" }
+          ].map((item, i) => (
+            <div key={i} className="bg-emerald-50 border border-emerald-100 p-6 rounded-xl">
+              <i className="ph-fill ph-brain text-emerald-500 text-3xl mb-4 block"></i>
+              <h4 className="font-bold text-slate-900 mb-2">{item.t}</h4>
+              <p className="text-sm text-slate-700">{item.d}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+
+    const Page4_BusinessImpact = () => (
+      <div className="space-y-8">
+        <p className="text-lg text-slate-600">Dampak nyata yang harus diukur untuk membuktikan keberhasilan ERSUS di hadapan manajemen Astra.</p>
+        <div className="space-y-4">
+          {[
+            { t: "OPEX Optimization", d: "Menurunkan biaya energi dan utilitas dengan menghilangkan idle load, leakage, hidden waste, dan mismatch supply-demand.", i: "ph-fill ph-trend-up", color: "text-green-500" },
+            { t: "Maintenance Budget Precision", d: "Mengurangi intervensi perawatan yang tidak perlu sekaligus mendeteksi aset yang mulai memburuk sebelum terjadi failure masif.", i: "ph-fill ph-wrench", color: "text-blue-500" },
+            { t: "Asset Right-Sizing", d: "Membantu mengevaluasi apakah kapasitas aset (chiller, genset, trafo) masih proporsional terhadap kebutuhan aktual dan profil risiko.", i: "ph-fill ph-hard-drives", color: "text-amber-500" },
+            { t: "Productivity & Workforce Leverage", d: "Mengurangi ketergantungan pada pemantauan manual (patrol) melalui auto-alert, prioritization, dan automasi kontrol bertahap.", i: "ph-fill ph-users", color: "text-indigo-500" },
+            { t: "Investment Quality & Governance", d: "Meningkatkan kualitas pengadaan, retrofit, dan replikasi aset baru berdasarkan data valid dari aset serupa sebelumnya.", i: "ph-fill ph-scales", color: "text-purple-500" }
+          ].map((item, i) => (
+            <div key={i} className="flex items-start gap-4 p-5 bg-white border border-slate-200 rounded-xl shadow-sm">
+              <div className={`p-3 rounded-lg bg-slate-50 ${item.color}`}><i className={`${item.i} text-2xl`}></i></div>
+              <div>
+                <h4 className="font-bold text-lg text-slate-900">{item.t}</h4>
+                <p className="text-slate-600">{item.d}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+
+    const Page5_Workstreams = () => (
+      <div className="space-y-8">
+        <div className="bg-blue-50 p-6 rounded-xl border border-blue-100 text-blue-900 mb-8">
+          <strong>Catatan untuk Tim IT & Development:</strong> Workstream ini adalah bahasa terpenting yang menerjemahkan ide EnMS menjadi backlog arsitektur dan modul pembangunan perangkat lunak.
+        </div>
+        <div className="space-y-6">
+          {[
+            { id: 1, name: "EnMS Context, Scope & Asset Profiling", mandate: "Fondasi sistem, definisi boundary, critical load mapping, risk profile, SEU candidate, dan peta sistem energi awal." },
+            { id: 2, name: "Data Foundation & Integration", mandate: "Data model utilitas, integrasi meter/BMS/PLC, baca status (running/trip), context driver, dan data quality check." },
+            { id: 3, name: "Energy Intelligence & Performance Modeling", mandate: "Engine SEU, EnPI logic, EnB baseline, anomaly detection, deteksi idle load, dan hidden waste." },
+            { id: 4, name: "Asset Health & Maintenance Intelligence", mandate: "Asset condition indicators, deteksi over/under maintenance, alarm frequency, dan failure precursor monitoring." },
+            { id: 5, name: "Optimization, Action & Decision Support", mandate: "Alert escalation, auto-ticketing, schedule optimization, standby-duty logic, dan right-sizing recommendation." },
+            { id: 6, name: "Governance, Reporting & Continuous Improvement", mandate: "Management dashboard, KPI tracking, compliance support, audit trail, corrective action tracker, dan portfolio benchmark." }
+          ].map((ws) => (
+            <div key={ws.id} className="border border-slate-200 rounded-xl overflow-hidden">
+              <div className="bg-slate-100 px-6 py-4 font-bold text-slate-800 flex gap-3 items-center">
+                <span className="bg-slate-800 text-white px-2 py-1 rounded text-xs">WS {ws.id}</span>
+                {ws.name}
+              </div>
+              <div className="p-6 bg-white text-slate-600 text-sm">
+                <span className="font-semibold text-slate-800">Mandat / Isi Build:</span> {ws.mandate}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+
+    const Page6_Governance = () => (
+      <div className="space-y-8">
+        <p className="text-lg text-slate-600">Menjadikan ERSUS sebagai sistem manajemen yang "hidup" dan memastikan proyek berjalan sesuai ritme Astra.</p>
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="bg-white p-6 rounded-xl border border-slate-200">
+            <h4 className="font-bold text-slate-900 mb-4 flex items-center gap-2"><i className="ph-fill ph-chart-bar text-blue-500 text-xl"></i> Output Pelaporan</h4>
+            <ul className="space-y-2 text-sm text-slate-600 list-disc pl-5">
+              <li>Energy Performance Report</li>
+              <li>Management Review Pack</li>
+              <li>Corrective Action Register</li>
+              <li>Portfolio / Cross-site Benchmark</li>
+              <li>Audit-ready Information untuk ESG</li>
+            </ul>
+          </div>
+          <div className="bg-slate-900 text-white p-6 rounded-xl shadow-lg border border-slate-800">
+            <h4 className="font-bold mb-4 flex items-center gap-2"><i className="ph-fill ph-shield-warning text-amber-500 text-xl"></i> Keputusan Manajemen</h4>
+            <ul className="space-y-3 text-sm text-slate-300">
+              <li className="flex items-start gap-2"><i className="ph-fill ph-check-circle text-green-400 mt-0.5 shrink-0 text-lg"></i> Finalisasi scope pilot & area SEU fase 1.</li>
+              <li className="flex items-start gap-2"><i className="ph-fill ph-check-circle text-green-400 mt-0.5 shrink-0 text-lg"></i> Penetapan owner lintas fungsi (Facility, IT, ESR).</li>
+              <li className="flex items-start gap-2"><i className="ph-fill ph-check-circle text-green-400 mt-0.5 shrink-0 text-lg"></i> Persetujuan arsitektur / 6 Workstreams.</li>
+              <li className="flex items-start gap-2"><i className="ph-fill ph-check-circle text-green-400 mt-0.5 shrink-0 text-lg"></i> Persetujuan ritme (cadence) management review.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    );
+
+    const App = () => {
+      const [activePage, setActivePage] = useState(0);
+
+      const renderContent = () => {
+        switch(activePage) {
+          case 0: return <LandingPage setActivePage={setActivePage} />;
+          case 1: return <SubpageLayout pageId={1} setActivePage={setActivePage}><Page1_Fundamental/></SubpageLayout>;
+          case 2: return <SubpageLayout pageId={2} setActivePage={setActivePage}><Page2_SystemModel/></SubpageLayout>;
+          case 3: return <SubpageLayout pageId={3} setActivePage={setActivePage}><Page3_Intelligence/></SubpageLayout>;
+          case 4: return <SubpageLayout pageId={4} setActivePage={setActivePage}><Page4_BusinessImpact/></SubpageLayout>;
+          case 5: return <SubpageLayout pageId={5} setActivePage={setActivePage}><Page5_Workstreams/></SubpageLayout>;
+          case 6: return <SubpageLayout pageId={6} setActivePage={setActivePage}><Page6_Governance/></SubpageLayout>;
+          default: return <LandingPage setActivePage={setActivePage} />;
+        }
+      };
+
+      return (
+        <div className="min-h-screen font-sans text-slate-800 bg-slate-50 flex flex-col">
+          <Navbar activePage={activePage} setActivePage={setActivePage} />
+          <main className="flex-grow">
+            {renderContent()}
+          </main>
+          <footer className="bg-slate-950 py-10 border-t border-white/10 text-center mt-auto">
+            <div className="max-w-7xl mx-auto px-4">
+              <div className="flex justify-center items-center gap-2 mb-6 opacity-75">
+                <i className="ph-fill ph-leaf text-white text-2xl"></i>
+                <span className="font-bold text-2xl text-white tracking-tight">ERSUS</span>
+              </div>
+              <p className="text-slate-400 text-sm max-w-lg mx-auto mb-4">
+                Digital EnMS Platform. Membaca energi, mengamankan aset, dan mendorong keputusan bisnis secara berkelanjutan.
+              </p>
+              <p className="text-slate-600 text-xs">
+                © {new Date().getFullYear()} Astra ESG Ready Smart Utility System.
+              </p>
+            </div>
+          </footer>
+        </div>
+      );
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
