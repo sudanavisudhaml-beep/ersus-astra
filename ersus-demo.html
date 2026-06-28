@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ERSUS — ESG Ready Smart Utility System | Astra International</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/@phosphor-icons/web"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --astra-blue: #0056B3;
+    --astra-gold: #F5A623;
+    --danger: #EF4444;
+    --warn: #F59E0B;
+    --ok: #10B981;
+    --info: #3B82F6;
+    --purple: #8B5CF6;
+  }
+
+  html, body { height: 100%; overflow: hidden; background: #020617; font-family: 'Inter', sans-serif; }
+
+  .screen { display: none; width: 100vw; height: 100vh; overflow: hidden; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  /* Pulse animation for live indicator */
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.4); }
+  }
+  .pulse { animation: pulse-dot 1.5s infinite; }
+
+  /* Blink for critical anomaly */
+  @keyframes blink-critical {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+  .blink { animation: blink-critical 1s infinite; }
+
+  /* Slide up for AI feed items */
+  @keyframes slide-up {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .slide-up { animation: slide-up 0.5s ease-out forwards; }
+
+  /* Counter animation */
+  @keyframes count-up {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  .count-in { animation: count-up 0.6s ease-out forwards; }
+
+  /* Glow effect */
+  .glow-green { box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); }
+  .glow-red { box-shadow: 0 0 20px rgba(239, 68, 68, 0.4); }
+  .glow-blue { box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); }
+  .glow-gold { box-shadow: 0 0 20px rgba(245, 166, 35, 0.3); }
+
+  /* Nav tabs */
+  .nav-tab {
+    cursor: pointer;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #64748b;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+    white-space: nowrap;
+  }
+  .nav-tab:hover { color: #94a3b8; background: rgba(255,255,255,0.05); }
+  .nav-tab.active { color: #f8fafc; background: rgba(59,130,246,0.15); border-color: rgba(59,130,246,0.4); }
+
+  /* KPI Card */
+  .kpi-card {
+    background: linear-gradient(135deg, rgba(15,23,42,0.9) 0%, rgba(30,41,59,0.8) 100%);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    border-radius: 16px 16px 0 0;
+  }
+  .kpi-card.green::before { background: linear-gradient(90deg, #10B981, #34D399); }
+  .kpi-card.red::before { background: linear-gradient(90deg, #EF4444, #F87171); }
+  .kpi-card.blue::before { background: linear-gradient(90deg, #3B82F6, #60A5FA); }
+  .kpi-card.gold::before { background: linear-gradient(90deg, #F5A623, #FCD34D); }
+  .kpi-card.purple::before { background: linear-gradient(90deg, #8B5CF6, #A78BFA); }
+
+  /* Asset chip */
+  .status-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .chip-ok { background: rgba(16,185,129,0.15); color: #34D399; border: 1px solid rgba(16,185,129,0.3); }
+  .chip-warn { background: rgba(245,158,11,0.15); color: #FCD34D; border: 1px solid rgba(245,158,11,0.3); }
+  .chip-crit { background: rgba(239,68,68,0.15); color: #F87171; border: 1px solid rgba(239,68,68,0.3); }
+  .chip-info { background: rgba(59,130,246,0.15); color: #93C5FD; border: 1px solid rgba(59,130,246,0.3); }
+
+  /* Progress bar */
+  .prog-bar { height: 6px; border-radius: 3px; background: rgba(255,255,255,0.08); overflow: hidden; }
+  .prog-fill { height: 100%; border-radius: 3px; transition: width 1s ease; }
+
+  /* AI chat bubble */
+  .ai-bubble {
+    background: linear-gradient(135deg, rgba(139,92,246,0.15), rgba(59,130,246,0.15));
+    border: 1px solid rgba(139,92,246,0.3);
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 10px;
+  }
+
+  /* Comparison table */
+  .compare-row { border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .compare-row:last-child { border-bottom: none; }
+
+  /* Typing cursor */
+  @keyframes blink-cursor {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+  .cursor::after {
+    content: '▋';
+    animation: blink-cursor 0.8s infinite;
+    color: #8B5CF6;
+    font-size: 0.9em;
+  }
+
+  /* Sparkline bars */
+  .sparkline-bar { display: inline-block; width: 6px; border-radius: 2px 2px 0 0; background: #3B82F6; vertical-align: bottom; transition: height 0.3s; }
+
+  /* Footer bar */
+  .footer-bar { background: rgba(2,6,23,0.95); border-top: 1px solid rgba(255,255,255,0.06); }
+
+  scrollbar-width: none;
+  ::-webkit-scrollbar { display: none; }
+
+  .data-table th { color: #64748b; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; padding: 10px 14px; }
+  .data-table td { padding: 12px 14px; font-size: 14px; color: #cbd5e1; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .data-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .mono { font-family: 'JetBrains Mono', monospace; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════
+     TOP NAVIGATION BAR
+═══════════════════════════════════════════════ -->
+<div style="position:fixed;top:0;left:0;right:0;z-index:50;background:rgba(2,6,23,0.97);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,0.07);">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 28px;">
+
+    <!-- Logo -->
+    <div style="display:flex;align-items:center;gap:14px;">
+      <div style="background:linear-gradient(135deg,#0056B3,#3B82F6);padding:8px 14px;border-radius:10px;font-size:18px;font-weight:900;color:white;letter-spacing:-0.5px;">
+        ERSUS
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:700;color:#e2e8f0;letter-spacing:0.04em;">ESG READY SMART UTILITY SYSTEM</div>
+        <div style="font-size:10px;color:#475569;margin-top:1px;">Astra International · Gedung AMDI · Jakarta Selatan</div>
+      </div>
+    </div>
+
+    <!-- Nav Tabs -->
+    <div style="display:flex;gap:6px;align-items:center;">
+      <div class="nav-tab active" onclick="showScreen(0)">
+        <i class="ph ph-lightning" style="margin-right:6px;"></i>Command Center
+      </div>
+      <div class="nav-tab" onclick="showScreen(1)">
+        <i class="ph ph-arrows-split" style="margin-right:6px;"></i>BEMS vs ERSUS
+      </div>
+      <div class="nav-tab" onclick="showScreen(2)">
+        <i class="ph ph-wind" style="margin-right:6px;"></i>AHU Intelligence
+      </div>
+      <div class="nav-tab" onclick="showScreen(3)">
+        <i class="ph ph-robot" style="margin-right:6px;"></i>AI Agent Live
+      </div>
+      <div class="nav-tab" onclick="showScreen(4)">
+        <i class="ph ph-trend-up" style="margin-right:6px;"></i>Business Impact
+      </div>
+    </div>
+
+    <!-- Live indicator -->
+    <div style="display:flex;align-items:center;gap:20px;">
+      <div style="display:flex;align-items:center;gap:8px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);padding:7px 14px;border-radius:8px;">
+        <div class="pulse" style="width:8px;height:8px;border-radius:50%;background:#10B981;"></div>
+        <span style="font-size:12px;font-weight:700;color:#34D399;">LIVE BEMS</span>
+      </div>
+      <div style="text-align:right;">
+        <div id="clock" style="font-size:18px;font-weight:700;color:#f1f5f9;font-variant-numeric:tabular-nums;" class="mono">--:--:--</div>
+        <div style="font-size:10px;color:#475569;">WIB · Sabtu 28 Jun 2026</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SCREEN 0: COMMAND CENTER
+═══════════════════════════════════════════════ -->
+<div class="screen active" id="screen-0" style="padding-top:62px;">
+  <div style="flex:1;display:flex;flex-direction:column;padding:20px 28px;gap:16px;overflow:hidden;">
+
+    <!-- Top KPI Row -->
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;">
+
+      <div class="kpi-card blue glow-blue">
+        <div style="font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">
+          <i class="ph ph-lightning-slash" style="margin-right:5px;"></i>Daya Aktif
+        </div>
+        <div style="font-size:42px;font-weight:900;color:#60A5FA;line-height:1;" class="mono">847</div>
+        <div style="font-size:14px;color:#64748b;margin-top:4px;">kW / 2.000 kVA</div>
+        <div class="prog-bar" style="margin-top:12px;">
+          <div class="prog-fill" style="width:42%;background:linear-gradient(90deg,#3B82F6,#60A5FA);"></div>
+        </div>
+        <div style="font-size:11px;color:#64748b;margin-top:6px;">Utilisasi: 42.4% kapasitas kontrak</div>
+      </div>
+
+      <div class="kpi-card green glow-green">
+        <div style="font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">
+          <i class="ph ph-database" style="margin-right:5px;"></i>Konsumsi Hari Ini
+        </div>
+        <div style="font-size:42px;font-weight:900;color:#34D399;line-height:1;" class="mono">4.821</div>
+        <div style="font-size:14px;color:#64748b;margin-top:4px;">kWh · Rp 6.990.450</div>
+        <div class="prog-bar" style="margin-top:12px;">
+          <div class="prog-fill" style="width:67%;background:linear-gradient(90deg,#10B981,#34D399);"></div>
+        </div>
+        <div style="font-size:11px;color:#64748b;margin-top:6px;">67% dari target harian (7.200 kWh)</div>
+      </div>
+
+      <div class="kpi-card gold glow-gold">
+        <div style="font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">
+          <i class="ph ph-gauge" style="margin-right:5px;"></i>EnPI Bulan Ini
+        </div>
+        <div style="font-size:42px;font-weight:900;color:#FCD34D;line-height:1;" class="mono">13.1</div>
+        <div style="font-size:14px;color:#64748b;margin-top:4px;">kWh/m²/bulan</div>
+        <div class="prog-bar" style="margin-top:12px;">
+          <div class="prog-fill" style="width:76%;background:linear-gradient(90deg,#F5A623,#FCD34D);"></div>
+        </div>
+        <div style="font-size:11px;color:#34D399;margin-top:6px;">▼ 5.1% dari baseline (13.8)</div>
+      </div>
+
+      <div class="kpi-card red glow-red">
+        <div style="font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">
+          <i class="ph ph-warning-circle" style="margin-right:5px;"></i>Anomali Aktif
+        </div>
+        <div style="font-size:42px;font-weight:900;color:#F87171;line-height:1;" class="mono">5</div>
+        <div style="font-size:14px;color:#64748b;margin-top:4px;">2 KRITIS · 3 PERINGATAN</div>
+        <div style="display:flex;gap:6px;margin-top:12px;">
+          <span class="status-chip chip-crit blink">2 KRITIS</span>
+          <span class="status-chip chip-warn">3 WARN</span>
+        </div>
+        <div style="font-size:11px;color:#F87171;margin-top:6px;">Potensi waste: Rp 425.000/jam</div>
+      </div>
+
+      <div class="kpi-card purple">
+        <div style="font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">
+          <i class="ph ph-robot" style="margin-right:5px;"></i>ERSUS AI Savings
+        </div>
+        <div style="font-size:42px;font-weight:900;color:#A78BFA;line-height:1;" class="mono">18.7</div>
+        <div style="font-size:14px;color:#64748b;margin-top:4px;">% penghematan vs baseline</div>
+        <div class="prog-bar" style="margin-top:12px;">
+          <div class="prog-fill" style="width:62%;background:linear-gradient(90deg,#8B5CF6,#A78BFA);"></div>
+        </div>
+        <div style="font-size:11px;color:#A78BFA;margin-top:6px;">YTD: Rp 234 juta tersimpan</div>
+      </div>
+    </div>
+
+    <!-- Main Content: Chart + Live Feed + SEU -->
+    <div style="display:grid;grid-template-columns:1.4fr 1fr 0.8fr;gap:14px;flex:1;min-height:0;">
+
+      <!-- Trend Chart (Simulated with bars) -->
+      <div style="background:rgba(15,23,42,0.9);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:20px;display:flex;flex-direction:column;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#e2e8f0;">Tren Konsumsi Harian</div>
+            <div style="font-size:11px;color:#475569;margin-top:2px;">kWh per 30 menit · Hari ini vs Baseline</div>
+          </div>
+          <div style="display:flex;gap:14px;align-items:center;">
+            <div style="display:flex;align-items:center;gap:6px;"><div style="width:16px;height:3px;background:#3B82F6;border-radius:2px;"></div><span style="font-size:11px;color:#64748b;">Aktual</span></div>
+            <div style="display:flex;align-items:center;gap:6px;"><div style="width:16px;height:3px;background:#F5A623;border-radius:2px;border-style:dashed;"></div><span style="font-size:11px;color:#64748b;">Baseline</span></div>
+            <div style="display:flex;align-items:center;gap:6px;"><div style="width:16px;height:3px;background:#EF4444;border-radius:2px;"></div><span style="font-size:11px;color:#64748b;">Anomali</span></div>
+          </div>
+        </div>
+        <div style="flex:1;display:flex;align-items:flex-end;gap:3px;padding:0 4px;" id="trend-chart">
+          <!-- Bars injected by JS -->
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:8px;padding:0 4px;">
+          <span style="font-size:10px;color:#334155;">06:00</span>
+          <span style="font-size:10px;color:#334155;">09:00</span>
+          <span style="font-size:10px;color:#334155;">12:00</span>
+          <span style="font-size:10px;color:#334155;">15:00</span>
+          <span style="font-size:10px;color:#334155;">Sekarang</span>
+        </div>
+      </div>
+
+      <!-- AI Alert Feed -->
+      <div style="background:rgba(15,23,42,0.9);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:20px;display:flex;flex-direction:column;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+          <div style="font-size:14px;font-weight:700;color:#e2e8f0;display:flex;align-items:center;gap:8px;">
+            <i class="ph ph-robot" style="color:#8B5CF6;"></i> ERSUS AI Insights
+          </div>
+          <div class="pulse" style="width:7px;height:7px;border-radius:50%;background:#8B5CF6;"></div>
+        </div>
+        <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;gap:8px;" id="ai-feed">
+          <!-- Injected by JS -->
+        </div>
+      </div>
+
+      <!-- SEU Breakdown -->
+      <div style="background:rgba(15,23,42,0.9);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:20px;">
+        <div style="font-size:14px;font-weight:700;color:#e2e8f0;margin-bottom:16px;display:flex;align-items:center;gap:8px;">
+          <i class="ph ph-chart-pie" style="color:#F5A623;"></i> SEU Breakdown
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+              <span style="font-size:12px;color:#94a3b8;">HVAC</span>
+              <span style="font-size:12px;font-weight:700;color:#60A5FA;">52%</span>
+            </div>
+            <div class="prog-bar"><div class="prog-fill" style="width:52%;background:linear-gradient(90deg,#3B82F6,#60A5FA);"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+              <span style="font-size:12px;color:#94a3b8;">Pencahayaan</span>
+              <span style="font-size:12px;font-weight:700;color:#34D399;">15%</span>
+            </div>
+            <div class="prog-bar"><div class="prog-fill" style="width:15%;background:linear-gradient(90deg,#10B981,#34D399);"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+              <span style="font-size:12px;color:#94a3b8;">Server Room</span>
+              <span style="font-size:12px;font-weight:700;color:#A78BFA;">13%</span>
+            </div>
+            <div class="prog-bar"><div class="prog-fill" style="width:13%;background:linear-gradient(90deg,#8B5CF6,#A78BFA);"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+              <span style="font-size:12px;color:#94a3b8;">Office Equipment</span>
+              <span style="font-size:12px;font-weight:700;color:#FCD34D;">8%</span>
+            </div>
+            <div class="prog-bar"><div class="prog-fill" style="width:8%;background:linear-gradient(90deg,#F5A623,#FCD34D);"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+              <span style="font-size:12px;color:#94a3b8;">Lift & Pompa</span>
+              <span style="font-size:12px;font-weight:700;color:#F87171;">5%</span>
+            </div>
+            <div class="prog-bar"><div class="prog-fill" style="width:5%;background:linear-gradient(90deg,#EF4444,#F87171);"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+              <span style="font-size:12px;color:#94a3b8;">Lainnya</span>
+              <span style="font-size:12px;font-weight:700;color:#64748b;">7%</span>
+            </div>
+            <div class="prog-bar"><div class="prog-fill" style="width:7%;background:#475569;"></div></div>
+          </div>
+        </div>
+        <div style="margin-top:16px;padding:12px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:10px;">
+          <div style="font-size:11px;color:#64748b;margin-bottom:4px;">ERSUS REKOMENDASI:</div>
+          <div style="font-size:12px;color:#93C5FD;line-height:1.5;">Optimalkan jadwal HVAC → potensi hemat <strong style="color:#60A5FA;">Rp 2.8 juta/hari</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Asset Status Bar -->
+    <div style="background:rgba(15,23,42,0.9);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:14px 20px;display:flex;gap:24px;align-items:center;">
+      <div style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.06em;">Status Aset Live:</div>
+      <div style="display:flex;gap:16px;flex:1;align-items:center;">
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 14px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:8px;">
+          <div style="width:6px;height:6px;border-radius:50%;background:#10B981;"></div>
+          <span style="font-size:12px;color:#34D399;">AHU 3A — Normal · 2421 kWh</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 14px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;" class="blink">
+          <div style="width:6px;height:6px;border-radius:50%;background:#EF4444;"></div>
+          <span style="font-size:12px;color:#F87171;">AHU 3B — METER ANOMALI · -0.05W</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 14px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:8px;">
+          <div style="width:6px;height:6px;border-radius:50%;background:#F59E0B;"></div>
+          <span style="font-size:12px;color:#FCD34D;">AHU 4A — High Load · 4042 kWh</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 14px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:8px;">
+          <div style="width:6px;height:6px;border-radius:50%;background:#F59E0B;"></div>
+          <span style="font-size:12px;color:#FCD34D;">AHU 4B — Fan 49Hz (Max) · 1440 kWh</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 14px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:8px;">
+          <div style="width:6px;height:6px;border-radius:50%;background:#3B82F6;"></div>
+          <span style="font-size:12px;color:#93C5FD;">Parkir — 100/200 slot · CC aktif</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 14px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:8px;">
+          <div style="width:6px;height:6px;border-radius:50%;background:#EF4444;"></div>
+          <span style="font-size:12px;color:#FCA5A5;">R.Meeting 301-303 — Kosong, AC ON</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SCREEN 1: BEMS vs ERSUS COMPARISON
+═══════════════════════════════════════════════ -->
+<div class="screen" id="screen-1" style="padding-top:62px;">
+  <div style="flex:1;padding:24px 32px;display:flex;flex-direction:column;gap:20px;overflow:hidden;">
+
+    <div style="text-align:center;">
+      <div style="font-size:32px;font-weight:900;color:#f1f5f9;margin-bottom:6px;">BEMS Memberitahu <span style="color:#64748b;">APA</span> yang terjadi.</div>
+      <div style="font-size:32px;font-weight:900;">ERSUS memberitahu <span style="color:#8B5CF6;">KENAPA</span>, <span style="color:#F5A623;">ARTINYA APA</span>, dan <span style="color:#10B981;">APA YANG HARUS DILAKUKAN</span>.</div>
+    </div>
+
+    <!-- Comparison Table -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;flex:1;min-height:0;">
+
+      <!-- BEMS Column -->
+      <div style="background:rgba(30,41,59,0.6);border:1px solid rgba(255,255,255,0.1);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;">
+        <div style="padding:18px 24px;background:rgba(71,85,105,0.3);border-bottom:1px solid rgba(255,255,255,0.06);">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:10px;height:10px;border-radius:50%;background:#64748b;"></div>
+            <div>
+              <div style="font-size:18px;font-weight:800;color:#94a3b8;">BEMS AMDI</div>
+              <div style="font-size:12px;color:#475569;margin-top:2px;">Raw sensor data · amdibemstech.com</div>
+            </div>
+            <div style="margin-left:auto;">
+              <span class="status-chip" style="background:rgba(100,116,139,0.15);color:#94a3b8;border:1px solid rgba(100,116,139,0.3);">DATA MENTAH</span>
+            </div>
+          </div>
+        </div>
+        <div style="padding:20px 24px;flex:1;overflow-y:auto;">
+          <div style="display:flex;flex-direction:column;gap:12px;">
+
+            <div style="padding:14px;background:rgba(15,23,42,0.6);border-radius:10px;border:1px solid rgba(255,255,255,0.06);">
+              <div style="font-size:11px;color:#475569;margin-bottom:8px;font-weight:600;">AHU 3A MEASUREMENT</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                <div><span style="font-size:11px;color:#64748b;">Voltage:</span> <span style="font-size:14px;font-weight:700;color:#94a3b8;" class="mono">407.07 V</span></div>
+                <div><span style="font-size:11px;color:#64748b;">Current:</span> <span style="font-size:14px;font-weight:700;color:#94a3b8;" class="mono">3.65 A</span></div>
+                <div><span style="font-size:11px;color:#64748b;">Power:</span> <span style="font-size:14px;font-weight:700;color:#94a3b8;" class="mono">1.05 W</span></div>
+                <div><span style="font-size:11px;color:#64748b;">Energy:</span> <span style="font-size:14px;font-weight:700;color:#94a3b8;" class="mono">2421.1 kWh</span></div>
+                <div><span style="font-size:11px;color:#64748b;">Fan:</span> <span style="font-size:14px;font-weight:700;color:#94a3b8;" class="mono">37 Hz</span></div>
+                <div><span style="font-size:11px;color:#64748b;">Temp:</span> <span style="font-size:14px;font-weight:700;color:#94a3b8;" class="mono">27°C / 70%</span></div>
+              </div>
+            </div>
+
+            <div style="padding:14px;background:rgba(15,23,42,0.6);border-radius:10px;border:1px solid rgba(239,68,68,0.2);">
+              <div style="font-size:11px;color:#475569;margin-bottom:8px;font-weight:600;">AHU 3B MEASUREMENT</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                <div><span style="font-size:11px;color:#64748b;">Voltage:</span> <span style="font-size:14px;font-weight:700;color:#94a3b8;" class="mono">410.1 V</span></div>
+                <div><span style="font-size:11px;color:#64748b;">Current:</span> <span style="font-size:14px;font-weight:700;color:#94a3b8;" class="mono">3.9 A</span></div>
+                <div><span style="font-size:11px;color:#64748b;">Power:</span> <span style="font-size:14px;font-weight:700;color:#F87171;font-size:18px;" class="mono">-0.05 W</span></div>
+                <div><span style="font-size:11px;color:#64748b;">Energy:</span> <span style="font-size:14px;font-weight:700;color:#94a3b8;" class="mono">5.77 kWh</span></div>
+                <div><span style="font-size:11px;color:#64748b;">Fan:</span> <span style="font-size:14px;font-weight:700;color:#94a3b8;" class="mono">33 Hz</span></div>
+                <div><span style="font-size:11px;color:#64748b;">Temp:</span> <span style="font-size:14px;font-weight:700;color:#94a3b8;" class="mono">27°C / 70%</span></div>
+              </div>
+            </div>
+
+            <div style="padding:14px;background:rgba(15,23,42,0.6);border-radius:10px;border:1px solid rgba(255,255,255,0.06);">
+              <div style="font-size:11px;color:#475569;margin-bottom:8px;font-weight:600;">RUANG MEETING — STATUS BEMS</div>
+              <div style="display:flex;flex-direction:column;gap:6px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <span style="font-size:12px;color:#94a3b8;">Meeting Room 301</span>
+                  <span style="font-size:13px;font-weight:700;color:#94a3b8;" class="mono">22.74°C / 61.90%</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <span style="font-size:12px;color:#94a3b8;">Meeting Room 302</span>
+                  <span style="font-size:13px;font-weight:700;color:#94a3b8;" class="mono">26.77°C / 54.31%</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <span style="font-size:12px;color:#94a3b8;">Meeting Room 303</span>
+                  <span style="font-size:13px;font-weight:700;color:#94a3b8;" class="mono">25.80°C / 54.06%</span>
+                </div>
+              </div>
+              <div style="margin-top:10px;padding:8px;background:rgba(100,116,139,0.1);border-radius:6px;">
+                <div style="font-size:11px;color:#64748b;">BEMS menampilkan: Suhu & Kelembaban saja.</div>
+                <div style="font-size:11px;color:#64748b;">Tidak ada informasi apakah ruangan kosong atau tidak.</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ERSUS Column -->
+      <div style="background:rgba(15,23,42,0.9);border:2px solid rgba(139,92,246,0.4);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;" class="glow-blue">
+        <div style="padding:18px 24px;background:linear-gradient(135deg,rgba(139,92,246,0.2),rgba(59,130,246,0.15));border-bottom:1px solid rgba(139,92,246,0.2);">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div class="pulse" style="width:10px;height:10px;border-radius:50%;background:#8B5CF6;"></div>
+            <div>
+              <div style="font-size:18px;font-weight:800;color:#e2e8f0;">ERSUS AI Intelligence Layer</div>
+              <div style="font-size:12px;color:#8B5CF6;margin-top:2px;">AI-powered · Dynamic Baseline · Anomaly Detection</div>
+            </div>
+            <div style="margin-left:auto;">
+              <span class="status-chip" style="background:rgba(139,92,246,0.2);color:#A78BFA;border:1px solid rgba(139,92,246,0.4);">INTELLIGENCE</span>
+            </div>
+          </div>
+        </div>
+        <div style="padding:20px 24px;flex:1;overflow-y:auto;">
+          <div style="display:flex;flex-direction:column;gap:12px;">
+
+            <div style="padding:14px;background:rgba(16,185,129,0.08);border-radius:10px;border:1px solid rgba(16,185,129,0.25);">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                <i class="ph ph-check-circle" style="color:#34D399;font-size:16px;"></i>
+                <div style="font-size:11px;color:#34D399;font-weight:700;">AHU 3A — ANALISIS ERSUS</div>
+              </div>
+              <div style="font-size:13px;color:#a1a1aa;line-height:1.6;">
+                Beroperasi <strong style="color:#34D399;">normal</strong> sesuai baseline jadwal. Fan 37Hz optimal untuk load hari ini. Konsumsi 2421 kWh dalam parameter yang diharapkan. <span style="color:#10B981;">Tidak diperlukan tindakan.</span>
+              </div>
+            </div>
+
+            <div style="padding:14px;background:rgba(239,68,68,0.1);border-radius:10px;border:1px solid rgba(239,68,68,0.4);" class="glow-red">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                <i class="ph ph-warning-octagon blink" style="color:#F87171;font-size:16px;"></i>
+                <div style="font-size:11px;color:#F87171;font-weight:700;">AHU 3B — ERSUS MENDETEKSI ANOMALI KRITIS</div>
+              </div>
+              <div style="font-size:13px;color:#a1a1aa;line-height:1.6;margin-bottom:10px;">
+                <strong style="color:#F87171;">METER MALFUNCTION TERDETEKSI.</strong> Power reading <span class="mono" style="color:#F87171;">-0.05W</span> adalah fisiknya mustahil (daya aktif tidak bisa negatif untuk beban HVAC). kWh tercatat hanya <span class="mono">5.77</span> vs AHU 3A yang <span class="mono">2421 kWh</span> — unit identik, selisih 419×.
+              </div>
+              <div style="background:rgba(239,68,68,0.15);border-radius:8px;padding:10px;">
+                <div style="font-size:11px;color:#F87171;font-weight:700;margin-bottom:6px;">IMPLIKASI:</div>
+                <div style="font-size:12px;color:#FCA5A5;line-height:1.6;">
+                  • Konsumsi AHU 3B TIDAK TERUKUR sejak meter error<br>
+                  • Estimasi konsumsi tak tercatat: <strong>~2.000-2.400 kWh/bulan</strong><br>
+                  • Nilai tidak tertagih: <strong style="color:#F87171;">Rp 2.9 – 3.5 juta/bulan</strong><br>
+                  • TINDAKAN: Ganti meter + audit historis 90 hari
+                </div>
+              </div>
+            </div>
+
+            <div style="padding:14px;background:rgba(245,158,11,0.08);border-radius:10px;border:1px solid rgba(245,158,11,0.3);">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                <i class="ph ph-warning" style="color:#FCD34D;font-size:16px;"></i>
+                <div style="font-size:11px;color:#FCD34D;font-weight:700;">RUANG MEETING 301-303 — ERSUS AI ANALYSIS</div>
+              </div>
+              <div style="font-size:13px;color:#a1a1aa;line-height:1.6;">
+                ERSUS menggabungkan data sensor suhu + <strong style="color:#FCD34D;">booking kalender + akses badge pintu</strong>. Deteksi: <strong style="color:#FCD34D;">Semua 3 ruangan KOSONG</strong>, AC masih aktif. Waste: <strong style="color:#FCD34D;">Rp 48.720/jam</strong>.
+              </div>
+              <div style="margin-top:8px;padding:8px;background:rgba(16,185,129,0.1);border-radius:6px;border:1px solid rgba(16,185,129,0.2);">
+                <div style="font-size:11px;color:#34D399;font-weight:700;">TINDAKAN OTOMATIS:</div>
+                <div style="font-size:12px;color:#6EE7B7;">ERSUS telah mengirim perintah ke BMS: set AC ke 28°C (hemat mode) untuk semua 3 ruangan.</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom tagline -->
+    <div style="text-align:center;padding:12px;background:linear-gradient(135deg,rgba(139,92,246,0.08),rgba(59,130,246,0.08));border:1px solid rgba(139,92,246,0.2);border-radius:12px;">
+      <div style="font-size:14px;color:#94a3b8;">ERSUS mendeteksi anomali meter AHU 3B yang <strong style="color:#F87171;">tidak terlihat oleh BEMS</strong> — potensi kerugian <strong style="color:#F87171;">Rp 42 juta/tahun</strong> dari satu meter saja.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SCREEN 2: AHU INTELLIGENCE
+═══════════════════════════════════════════════ -->
+<div class="screen" id="screen-2" style="padding-top:62px;">
+  <div style="flex:1;padding:20px 28px;display:flex;flex-direction:column;gap:16px;overflow:hidden;">
+
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div style="font-size:22px;font-weight:800;color:#f1f5f9;">AHU Intelligence — Lantai 3 & 4</div>
+        <div style="font-size:13px;color:#475569;margin-top:2px;">Data live dari BEMS AMDI · ERSUS AI analysis overlay</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <span class="status-chip chip-ok"><i class="ph ph-check-circle"></i> 2 NORMAL</span>
+        <span class="status-chip chip-crit blink"><i class="ph ph-warning-octagon"></i> 1 KRITIS</span>
+        <span class="status-chip chip-warn"><i class="ph ph-warning"></i> 1 PERHATIAN</span>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;flex:1;min-height:0;">
+
+      <!-- AHU 3A -->
+      <div style="background:rgba(15,23,42,0.9);border:1px solid rgba(16,185,129,0.3);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:14px;" class="glow-green">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <div style="font-size:20px;font-weight:800;color:#e2e8f0;">AHU 3A</div>
+            <div style="font-size:12px;color:#475569;">Lantai 3 · Zone A · Air Handling Unit</div>
+          </div>
+          <span class="status-chip chip-ok"><i class="ph ph-check-circle"></i> NORMAL</span>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+          <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:10px;color:#64748b;margin-bottom:4px;">VOLTAGE</div>
+            <div style="font-size:22px;font-weight:800;color:#60A5FA;" class="mono">407.07</div>
+            <div style="font-size:10px;color:#475569;">Volt</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:10px;color:#64748b;margin-bottom:4px;">CURRENT</div>
+            <div style="font-size:22px;font-weight:800;color:#60A5FA;" class="mono">3.65</div>
+            <div style="font-size:10px;color:#475569;">Ampere</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:10px;color:#64748b;margin-bottom:4px;">POWER</div>
+            <div style="font-size:22px;font-weight:800;color:#34D399;" class="mono">1.05</div>
+            <div style="font-size:10px;color:#475569;">Watt</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:10px;color:#64748b;margin-bottom:4px;">ENERGY</div>
+            <div style="font-size:22px;font-weight:800;color:#34D399;" class="mono">2421</div>
+            <div style="font-size:10px;color:#475569;">kWh</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:10px;color:#64748b;margin-bottom:4px;">FAN FREQ</div>
+            <div style="font-size:22px;font-weight:800;color:#A78BFA;" class="mono">37</div>
+            <div style="font-size:10px;color:#475569;">Hz</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:10px;color:#64748b;margin-bottom:4px;">TEMP/RH</div>
+            <div style="font-size:22px;font-weight:800;color:#34D399;" class="mono">27°</div>
+            <div style="font-size:10px;color:#475569;">70% RH</div>
+          </div>
+        </div>
+
+        <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:10px;padding:12px;">
+          <div style="font-size:11px;color:#10B981;font-weight:700;margin-bottom:6px;">ERSUS AI ASSESSMENT:</div>
+          <div style="font-size:12px;color:#6EE7B7;line-height:1.6;">Beroperasi sesuai dynamic baseline untuk hari Sabtu (beban rendah). Fan 37Hz optimal — 15% lebih hemat dari setpoint default. Tidak ada anomali terdeteksi. Konsumsi historis konsisten.</div>
+        </div>
+      </div>
+
+      <!-- AHU 3B — CRITICAL -->
+      <div style="background:rgba(15,23,42,0.9);border:2px solid rgba(239,68,68,0.5);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:14px;" class="glow-red">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <div style="font-size:20px;font-weight:800;color:#e2e8f0;">AHU 3B</div>
+            <div style="font-size:12px;color:#475569;">Lantai 3 · Zone B · Air Handling Unit</div>
+          </div>
+          <span class="status-chip chip-crit blink"><i class="ph ph-warning-octagon"></i> METER MALFUNCTION</span>
+        </div>
+
+        <div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:14px;">
+          <div style="font-size:12px;color:#F87171;font-weight:700;margin-bottom:8px;">AHU 3A vs AHU 3B — PERBANDINGAN ANOMALI:</div>
+          <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;">
+            <div style="text-align:center;">
+              <div style="font-size:10px;color:#64748b;margin-bottom:2px;">AHU 3A (Normal)</div>
+              <div style="font-size:28px;font-weight:900;color:#34D399;" class="mono">2421 kWh</div>
+            </div>
+            <div style="font-size:24px;color:#F87171;font-weight:900;">vs</div>
+            <div style="text-align:center;">
+              <div style="font-size:10px;color:#64748b;margin-bottom:2px;">AHU 3B (Error)</div>
+              <div style="font-size:28px;font-weight:900;color:#F87171;" class="mono">5.77 kWh</div>
+            </div>
+          </div>
+          <div style="text-align:center;margin-top:8px;">
+            <span style="font-size:13px;color:#F87171;font-weight:700;">Selisih 419×</span>
+            <span style="font-size:12px;color:#64748b;margin-left:8px;">— Unit identik, kondisi serupa</span>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+          <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:10px;color:#64748b;margin-bottom:4px;">VOLTAGE</div>
+            <div style="font-size:22px;font-weight:800;color:#60A5FA;" class="mono">410.1</div>
+            <div style="font-size:10px;color:#475569;">Volt · Normal</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:10px;color:#64748b;margin-bottom:4px;">CURRENT</div>
+            <div style="font-size:22px;font-weight:800;color:#60A5FA;" class="mono">3.9</div>
+            <div style="font-size:10px;color:#475569;">Ampere · Normal</div>
+          </div>
+          <div style="background:rgba(239,68,68,0.2);border-radius:10px;padding:12px;text-align:center;border:1px solid rgba(239,68,68,0.4);">
+            <div style="font-size:10px;color:#F87171;margin-bottom:4px;">POWER ⚠</div>
+            <div style="font-size:22px;font-weight:900;color:#F87171;" class="mono blink">-0.05</div>
+            <div style="font-size:10px;color:#F87171;">Watt · IMPOSSIBLE</div>
+          </div>
+        </div>
+
+        <div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:12px;">
+          <div style="font-size:11px;color:#F87171;font-weight:700;margin-bottom:6px;">ERSUS AI ROOT CAUSE ANALYSIS:</div>
+          <div style="font-size:12px;color:#FCA5A5;line-height:1.7;">
+            Tegangan (410V) dan Arus (3.9A) terukur normal → berarti AHU 3B beroperasi dan mengkonsumsi daya. Power <span class="mono">-0.05W</span> secara fisik mustahil untuk beban induktif HVAC. <strong>Diagnosis: Power Transducer / CT sensor malfunction.</strong> Konsumsi real estimasi ~2.000-2.400 kWh/bulan tidak terukur.
+          </div>
+          <div style="margin-top:8px;padding:8px;background:rgba(239,68,68,0.15);border-radius:6px;">
+            <strong style="font-size:12px;color:#F87171;">Dampak finansial: Rp 2.9–3.5 juta/bulan untracked</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- AHU 4A -->
+      <div style="background:rgba(15,23,42,0.9);border:1px solid rgba(245,158,11,0.3);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <div style="font-size:20px;font-weight:800;color:#e2e8f0;">AHU 4A</div>
+            <div style="font-size:12px;color:#475569;">Lantai 4 · Zone A · Air Handling Unit</div>
+          </div>
+          <span class="status-chip chip-warn"><i class="ph ph-warning"></i> HIGH CONSUMPTION</span>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+          <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:10px;color:#64748b;margin-bottom:4px;">VOLTAGE</div>
+            <div style="font-size:22px;font-weight:800;color:#60A5FA;" class="mono">385.94</div>
+            <div style="font-size:10px;color:#475569;">Volt</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:10px;color:#64748b;margin-bottom:4px;">CURRENT</div>
+            <div style="font-size:22px;font-weight:800;color:#FCD34D;" class="mono">9.02</div>
+            <div style="font-size:10px;color:#475569;">Ampere · Tinggi</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:10px;color:#64748b;margin-bottom:4px;">POWER</div>
+            <div style="font-size:22px;font-weight:800;color:#FCD34D;" class="mono">2.84</div>
+            <div style="font-size:10px;color:#475569;">kW</div>
+          </div>
+          <div style="background:rgba(245,158,11,0.1);border-radius:10px;padding:12px;text-align:center;border:1px solid rgba(245,158,11,0.3);">
+            <div style="font-size:10px;color:#F59E0B;margin-bottom:4px;">ENERGY ⚠</div>
+            <div style="font-size:22px;font-weight:900;color:#FCD34D;" class="mono">4041</div>
+            <div style="font-size:10px;color:#FCD34D;">kWh · Tertinggi</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:10px;color:#64748b;margin-bottom:4px;">FAN FREQ</div>
+            <div style="font-size:22px;font-weight:800;color:#A78BFA;" class="mono">41</div>
+            <div style="font-size:10px;color:#475569;">Hz</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:10px;color:#64748b;margin-bottom:4px;">TEMP/RH</div>
+            <div style="font-size:22px;font-weight:800;color:#34D399;" class="mono">27°</div>
+            <div style="font-size:10px;color:#475569;">70% RH</div>
+          </div>
+        </div>
+
+        <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:10px;padding:12px;">
+          <div style="font-size:11px;color:#F59E0B;font-weight:700;margin-bottom:6px;">ERSUS AI ASSESSMENT:</div>
+          <div style="font-size:12px;color:#FDE68A;line-height:1.6;">Konsumsi tertinggi di gedung (4041 kWh). Current 9A vs AHU lain rata-rata 3.5A — kemungkinan Lantai 4 memiliki beban occupancy lebih tinggi ATAU ada inefisiensi filter/coil. Rekomendasi: Jadwalkan inspeksi preventif dan filter cleaning.</div>
+        </div>
+      </div>
+
+      <!-- AHU 4B -->
+      <div style="background:rgba(15,23,42,0.9);border:1px solid rgba(245,158,11,0.3);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <div style="font-size:20px;font-weight:800;color:#e2e8f0;">AHU 4B</div>
+            <div style="font-size:12px;color:#475569;">Lantai 4 · Zone B · Air Handling Unit</div>
+          </div>
+          <span class="status-chip chip-warn"><i class="ph ph-warning"></i> FAN NEAR MAX</span>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+          <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:10px;color:#64748b;margin-bottom:4px;">VOLTAGE</div>
+            <div style="font-size:22px;font-weight:800;color:#60A5FA;" class="mono">406.01</div>
+            <div style="font-size:10px;color:#475569;">Volt</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:10px;color:#64748b;margin-bottom:4px;">CURRENT</div>
+            <div style="font-size:22px;font-weight:800;color:#60A5FA;" class="mono">3.5</div>
+            <div style="font-size:10px;color:#475569;">Ampere</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:10px;color:#64748b;margin-bottom:4px;">POWER</div>
+            <div style="font-size:22px;font-weight:800;color:#34D399;" class="mono">1.1</div>
+            <div style="font-size:10px;color:#475569;">kW</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:10px;color:#64748b;margin-bottom:4px;">ENERGY</div>
+            <div style="font-size:22px;font-weight:800;color:#94a3b8;" class="mono">1440</div>
+            <div style="font-size:10px;color:#475569;">kWh</div>
+          </div>
+          <div style="background:rgba(245,158,11,0.12);border-radius:10px;padding:12px;text-align:center;border:1px solid rgba(245,158,11,0.4);">
+            <div style="font-size:10px;color:#F59E0B;margin-bottom:4px;">FAN FREQ ⚠</div>
+            <div style="font-size:22px;font-weight:900;color:#FCD34D;" class="mono">49</div>
+            <div style="font-size:10px;color:#FCD34D;">Hz · 98% max</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:10px;color:#64748b;margin-bottom:4px;">TEMP/RH</div>
+            <div style="font-size:22px;font-weight:800;color:#34D399;" class="mono">27°</div>
+            <div style="font-size:10px;color:#475569;">70% RH</div>
+          </div>
+        </div>
+
+        <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:10px;padding:12px;">
+          <div style="font-size:11px;color:#F59E0B;font-weight:700;margin-bottom:6px;">ERSUS AI ASSESSMENT:</div>
+          <div style="font-size:12px;color:#FDE68A;line-height:1.6;">Fan beroperasi di 49Hz — hampir mencapai maksimum 50Hz. Pada load ini, efisiensi VFD menurun signifikan. Padahal suhu sudah tercapai (27°C). ERSUS merekomendasikan: reduce setpoint temperature 0.5°C untuk turunkan fan ke ~40Hz → hemat ~15% energi motor.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SCREEN 3: AI AGENT LIVE
+═══════════════════════════════════════════════ -->
+<div class="screen" id="screen-3" style="padding-top:62px;">
+  <div style="flex:1;padding:20px 28px;display:grid;grid-template-columns:1fr 1fr;gap:20px;overflow:hidden;">
+
+    <!-- AI Chat Panel -->
+    <div style="background:rgba(15,23,42,0.9);border:1px solid rgba(139,92,246,0.3);border-radius:16px;display:flex;flex-direction:column;overflow:hidden;" class="glow-blue">
+      <div style="padding:16px 20px;background:linear-gradient(135deg,rgba(139,92,246,0.2),rgba(59,130,246,0.1));border-bottom:1px solid rgba(139,92,246,0.2);">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="background:linear-gradient(135deg,#8B5CF6,#3B82F6);width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;">
+            <i class="ph ph-robot" style="color:white;font-size:18px;"></i>
+          </div>
+          <div>
+            <div style="font-size:15px;font-weight:700;color:#e2e8f0;">ERSUS AI Agent</div>
+            <div style="font-size:11px;color:#8B5CF6;display:flex;align-items:center;gap:5px;">
+              <div class="pulse" style="width:6px;height:6px;border-radius:50%;background:#8B5CF6;"></div>
+              Online · Real-time monitoring aktif
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="flex:1;padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;" id="chat-messages">
+        <!-- Injected by JS -->
+      </div>
+
+      <div style="padding:12px 16px;border-top:1px solid rgba(255,255,255,0.06);display:flex;gap:8px;">
+        <div style="flex:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 14px;font-size:13px;color:#64748b;" id="chat-input-display">
+          Tanya ERSUS AI...
+        </div>
+        <button style="background:linear-gradient(135deg,#8B5CF6,#3B82F6);border:none;border-radius:10px;padding:10px 16px;color:white;font-weight:600;cursor:pointer;font-size:13px;" onclick="nextQuestion()">
+          Tanya <i class="ph ph-paper-plane-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Right Panel: Dynamic Baseline + Actions -->
+    <div style="display:flex;flex-direction:column;gap:16px;overflow:hidden;">
+
+      <!-- Dynamic Baseline Explanation -->
+      <div style="background:rgba(15,23,42,0.9);border:1px solid rgba(245,166,35,0.3);border-radius:16px;padding:20px;">
+        <div style="font-size:14px;font-weight:700;color:#FCD34D;margin-bottom:14px;display:flex;align-items:center;gap:8px;">
+          <i class="ph ph-brain" style="font-size:18px;"></i> Dynamic Baseline Engine
+        </div>
+        <div style="font-size:12px;color:#64748b;margin-bottom:14px;">ERSUS menggunakan baseline DINAMIS — otomatis menyesuaikan dengan kondisi operasional:</div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+          <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px;">
+            <div style="font-size:10px;color:#64748b;margin-bottom:4px;">OCCUPANCY (Badge)</div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div class="prog-bar" style="flex:1;"><div class="prog-fill" style="width:50%;background:#3B82F6;"></div></div>
+              <span style="font-size:13px;font-weight:700;color:#60A5FA;" class="mono">50%</span>
+            </div>
+            <div style="font-size:10px;color:#475569;margin-top:4px;">~250 orang hadir (Sabtu)</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px;">
+            <div style="font-size:10px;color:#64748b;margin-bottom:4px;">CUACA (BMKG)</div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <i class="ph ph-sun" style="color:#FCD34D;font-size:16px;"></i>
+              <span style="font-size:13px;font-weight:700;color:#FCD34D;">34°C · Cerah</span>
+            </div>
+            <div style="font-size:10px;color:#475569;margin-top:4px;">+8% beban HVAC vs baseline</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px;">
+            <div style="font-size:10px;color:#64748b;margin-bottom:4px;">JADWAL KERJA</div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <i class="ph ph-calendar" style="color:#A78BFA;font-size:16px;"></i>
+              <span style="font-size:13px;font-weight:700;color:#A78BFA;">Hari Kerja</span>
+            </div>
+            <div style="font-size:10px;color:#475569;margin-top:4px;">Peak hour: 09:00–17:00</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px;">
+            <div style="font-size:10px;color:#64748b;margin-bottom:4px;">AKTIVITAS GEDUNG</div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <i class="ph ph-building" style="color:#34D399;font-size:16px;"></i>
+              <span style="font-size:13px;font-weight:700;color:#34D399;">Normal Ops</span>
+            </div>
+            <div style="font-size:10px;color:#475569;margin-top:4px;">Tidak ada event khusus</div>
+          </div>
+        </div>
+
+        <div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);border-radius:10px;padding:12px;">
+          <div style="font-size:11px;color:#F59E0B;font-weight:700;margin-bottom:4px;">BASELINE TERHITUNG HARI INI:</div>
+          <div style="font-size:13px;color:#FDE68A;">Target konsumsi: <span class="mono" style="color:#FCD34D;">7.200 kWh</span> (adjusted untuk 50% occupancy + cuaca 34°C)</div>
+          <div style="font-size:12px;color:#94a3b8;margin-top:4px;">Aktual sejauh ini: 4.821 kWh (67%) — <span style="color:#34D399;">ON TRACK</span></div>
+        </div>
+      </div>
+
+      <!-- AI Actions Taken -->
+      <div style="background:rgba(15,23,42,0.9);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:20px;flex:1;">
+        <div style="font-size:14px;font-weight:700;color:#e2e8f0;margin-bottom:14px;display:flex;align-items:center;gap:8px;">
+          <i class="ph ph-gear-six" style="color:#10B981;"></i> Tindakan Otomatis ERSUS Hari Ini
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;" id="actions-log">
+          <!-- Injected by JS -->
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SCREEN 4: BUSINESS IMPACT
+═══════════════════════════════════════════════ -->
+<div class="screen" id="screen-4" style="padding-top:62px;">
+  <div style="flex:1;padding:20px 28px;display:flex;flex-direction:column;gap:16px;overflow:hidden;">
+
+    <div style="text-align:center;padding:10px 0;">
+      <div style="font-size:28px;font-weight:900;color:#f1f5f9;margin-bottom:4px;">ERSUS Business Impact — Gedung AMDI</div>
+      <div style="font-size:14px;color:#475569;">ROI Analysis · YTD 2026 · 12.500 m² · 9 Lantai</div>
+    </div>
+
+    <!-- Top Impact Numbers -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;">
+      <div class="kpi-card green glow-green" style="text-align:center;padding:20px 16px;">
+        <div style="font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Penghematan YTD</div>
+        <div style="font-size:48px;font-weight:900;color:#34D399;line-height:1;" class="mono">234</div>
+        <div style="font-size:16px;color:#64748b;margin-top:4px;">Juta Rupiah</div>
+        <div style="font-size:12px;color:#10B981;margin-top:8px;">18.7% vs baseline</div>
+      </div>
+      <div class="kpi-card blue glow-blue" style="text-align:center;padding:20px 16px;">
+        <div style="font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Proyeksi Hemat/Tahun</div>
+        <div style="font-size:48px;font-weight:900;color:#60A5FA;line-height:1;" class="mono">468</div>
+        <div style="font-size:16px;color:#64748b;margin-top:4px;">Juta Rupiah/Tahun</div>
+        <div style="font-size:12px;color:#3B82F6;margin-top:8px;">Satu gedung saja</div>
+      </div>
+      <div class="kpi-card gold glow-gold" style="text-align:center;padding:20px 16px;">
+        <div style="font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Payback Period</div>
+        <div style="font-size:48px;font-weight:900;color:#FCD34D;line-height:1;" class="mono">8</div>
+        <div style="font-size:16px;color:#64748b;margin-top:4px;">Bulan</div>
+        <div style="font-size:12px;color:#F5A623;margin-top:8px;">ROI positif mulai bulan ke-9</div>
+      </div>
+      <div class="kpi-card purple" style="text-align:center;padding:20px 16px;">
+        <div style="font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">CO₂ Dihindari</div>
+        <div style="font-size:48px;font-weight:900;color:#A78BFA;line-height:1;" class="mono">142</div>
+        <div style="font-size:16px;color:#64748b;margin-top:4px;">Ton CO₂e/Tahun</div>
+        <div style="font-size:12px;color:#8B5CF6;margin-top:8px;">Setara 284 pohon dewasa</div>
+      </div>
+    </div>
+
+    <!-- Middle: Savings Breakdown + Scale-up vision -->
+    <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:16px;flex:1;min-height:0;">
+
+      <!-- Savings Breakdown -->
+      <div style="background:rgba(15,23,42,0.9);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:20px;">
+        <div style="font-size:15px;font-weight:700;color:#e2e8f0;margin-bottom:16px;display:flex;align-items:center;gap:8px;">
+          <i class="ph ph-chart-bar" style="color:#34D399;"></i> Rincian Penghematan Teridentifikasi
+        </div>
+        <table style="width:100%;border-collapse:collapse;" class="data-table">
+          <thead>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.08);">
+              <th style="text-align:left;">Anomali / Inefisiensi</th>
+              <th style="text-align:right;">Waste/Bulan</th>
+              <th style="text-align:right;">Nilai (Rp)</th>
+              <th style="text-align:center;">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="compare-row">
+              <td>
+                <div style="font-size:13px;color:#e2e8f0;font-weight:500;">AHU 3B Meter Malfunction</div>
+                <div style="font-size:11px;color:#64748b;">Konsumsi tidak terukur/tertagih</div>
+              </td>
+              <td style="text-align:right;color:#F87171;font-weight:700;" class="mono">~2.200 kWh</td>
+              <td style="text-align:right;color:#F87171;font-weight:700;">Rp 3.190.000</td>
+              <td style="text-align:center;"><span class="status-chip chip-crit blink">KRITIS</span></td>
+            </tr>
+            <tr class="compare-row">
+              <td>
+                <div style="font-size:13px;color:#e2e8f0;font-weight:500;">Meeting Rooms Kosong — AC On</div>
+                <div style="font-size:11px;color:#64748b;">3 ruangan, rata-rata 3 jam/hari</div>
+              </td>
+              <td style="text-align:right;color:#FCD34D;font-weight:700;" class="mono">648 kWh</td>
+              <td style="text-align:right;color:#FCD34D;font-weight:700;">Rp 939.600</td>
+              <td style="text-align:center;"><span class="status-chip chip-warn">AKTIF</span></td>
+            </tr>
+            <tr class="compare-row">
+              <td>
+                <div style="font-size:13px;color:#e2e8f0;font-weight:500;">AHU 4B Fan Overspeeding</div>
+                <div style="font-size:11px;color:#64748b;">Fan 49Hz saat suhu sudah optimal</div>
+              </td>
+              <td style="text-align:right;color:#FCD34D;font-weight:700;" class="mono">215 kWh</td>
+              <td style="text-align:right;color:#FCD34D;font-weight:700;">Rp 311.750</td>
+              <td style="text-align:center;"><span class="status-chip chip-warn">MONITORING</span></td>
+            </tr>
+            <tr class="compare-row">
+              <td>
+                <div style="font-size:13px;color:#e2e8f0;font-weight:500;">Operasi di Luar Jam Kerja</div>
+                <div style="font-size:11px;color:#64748b;">AHU aktif sebelum 07:00 & setelah 18:00</div>
+              </td>
+              <td style="text-align:right;color:#FCD34D;font-weight:700;" class="mono">672 kWh</td>
+              <td style="text-align:right;color:#FCD34D;font-weight:700;">Rp 974.400</td>
+              <td style="text-align:center;"><span class="status-chip chip-ok">RESOLVED</span></td>
+            </tr>
+            <tr class="compare-row">
+              <td>
+                <div style="font-size:13px;color:#e2e8f0;font-weight:500;">Chiller Scheduling Optimization</div>
+                <div style="font-size:11px;color:#64748b;">Pre-cool + load shifting via ERSUS AI</div>
+              </td>
+              <td style="text-align:right;color:#34D399;font-weight:700;" class="mono">1.800 kWh</td>
+              <td style="text-align:right;color:#34D399;font-weight:700;">Rp 2.610.000</td>
+              <td style="text-align:center;"><span class="status-chip chip-ok">ACTIVE</span></td>
+            </tr>
+            <tr style="background:rgba(16,185,129,0.05);">
+              <td style="font-weight:700;color:#34D399;">TOTAL POTENSI PENGHEMATAN</td>
+              <td style="text-align:right;font-weight:900;color:#34D399;font-size:16px;" class="mono">5.535 kWh</td>
+              <td style="text-align:right;font-weight:900;color:#34D399;font-size:16px;">Rp 8.025.750</td>
+              <td style="text-align:center;"><span class="status-chip" style="background:rgba(16,185,129,0.2);color:#34D399;border:1px solid rgba(16,185,129,0.4);">PER BULAN</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Scale-up Vision -->
+      <div style="background:rgba(15,23,42,0.9);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:12px;">
+        <div style="font-size:15px;font-weight:700;color:#e2e8f0;margin-bottom:4px;display:flex;align-items:center;gap:8px;">
+          <i class="ph ph-buildings" style="color:#A78BFA;"></i> Visi Skala Astra International
+        </div>
+        <div style="font-size:12px;color:#64748b;margin-bottom:4px;">Jika ERSUS diimplementasikan di seluruh operasional Astra:</div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div style="background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.2);border-radius:10px;padding:14px;">
+            <div style="font-size:10px;color:#8B5CF6;font-weight:600;margin-bottom:6px;">ASTRA OTOPARTS (WINTEQ)</div>
+            <div style="font-size:20px;font-weight:800;color:#A78BFA;" class="mono">50+</div>
+            <div style="font-size:11px;color:#64748b;">pabrik & fasilitas</div>
+            <div style="font-size:13px;font-weight:700;color:#8B5CF6;margin-top:6px;">~Rp 24M/tahun</div>
+          </div>
+          <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:10px;padding:14px;">
+            <div style="font-size:10px;color:#3B82F6;font-weight:600;margin-bottom:6px;">ASTRAGRAPHIA OFFICES</div>
+            <div style="font-size:20px;font-weight:800;color:#60A5FA;" class="mono">200+</div>
+            <div style="font-size:11px;color:#64748b;">kantor & branch</div>
+            <div style="font-size:13px;font-weight:700;color:#3B82F6;margin-top:6px;">~Rp 12M/tahun</div>
+          </div>
+          <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:10px;padding:14px;">
+            <div style="font-size:10px;color:#10B981;font-weight:600;margin-bottom:6px;">ASTRA AGRO / PERKEBUNAN</div>
+            <div style="font-size:20px;font-weight:800;color:#34D399;" class="mono">30+</div>
+            <div style="font-size:11px;color:#64748b;">estate & pabrik CPO</div>
+            <div style="font-size:13px;font-weight:700;color:#10B981;margin-top:6px;">~Rp 18M/tahun</div>
+          </div>
+          <div style="background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.2);border-radius:10px;padding:14px;">
+            <div style="font-size:10px;color:#F5A623;font-weight:600;margin-bottom:6px;">UNITED TRACTORS / MINING</div>
+            <div style="font-size:20px;font-weight:800;color:#FCD34D;" class="mono">15+</div>
+            <div style="font-size:11px;color:#64748b;">site tambang & workshop</div>
+            <div style="font-size:13px;font-weight:700;color:#F5A623;margin-top:6px;">~Rp 30M/tahun</div>
+          </div>
+        </div>
+
+        <div style="background:linear-gradient(135deg,rgba(139,92,246,0.15),rgba(59,130,246,0.1));border:2px solid rgba(139,92,246,0.4);border-radius:12px;padding:16px;margin-top:4px;">
+          <div style="font-size:11px;color:#8B5CF6;font-weight:700;margin-bottom:6px;">TOTAL POTENSI ASTRA GROUP:</div>
+          <div style="font-size:36px;font-weight:900;color:#A78BFA;line-height:1;" class="mono">Rp 84 Miliar</div>
+          <div style="font-size:14px;color:#64748b;margin-top:4px;">per tahun dari efisiensi energi + ESG compliance</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom CTA -->
+    <div style="background:linear-gradient(135deg,rgba(0,86,179,0.2),rgba(139,92,246,0.2));border:1px solid rgba(0,86,179,0.4);border-radius:14px;padding:16px 24px;display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div style="font-size:18px;font-weight:800;color:#f1f5f9;">ERSUS siap untuk Proof of Concept di Gedung AMDI</div>
+        <div style="font-size:13px;color:#64748b;margin-top:4px;">Winteq (Astra Otoparts) + Astragraphia Network · Stack: Next.js + FastAPI + TimescaleDB + MQTT</div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:center;">
+        <div style="text-align:center;padding:12px 20px;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);border-radius:10px;">
+          <div style="font-size:22px;font-weight:900;color:#34D399;">8</div>
+          <div style="font-size:11px;color:#64748b;">bulan payback</div>
+        </div>
+        <div style="text-align:center;padding:12px 20px;background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);border-radius:10px;">
+          <div style="font-size:22px;font-weight:900;color:#60A5FA;">18.7%</div>
+          <div style="font-size:11px;color:#64748b;">penghematan energi</div>
+        </div>
+        <div style="text-align:center;padding:12px 20px;background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);border-radius:10px;">
+          <div style="font-size:22px;font-weight:900;color:#A78BFA;">ISO 50001</div>
+          <div style="font-size:11px;color:#64748b;">ESG compliant</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     FOOTER
+═══════════════════════════════════════════════ -->
+<div class="footer-bar" style="position:fixed;bottom:0;left:0;right:0;z-index:50;padding:6px 28px;display:flex;justify-content:space-between;align-items:center;">
+  <div style="font-size:10px;color:#1e293b;display:flex;gap:16px;">
+    <span style="color:#334155;">ERSUS v1.0 Demo</span>
+    <span>·</span>
+    <span style="color:#334155;">Site: AMDI-AHO-01</span>
+    <span>·</span>
+    <span style="color:#334155;">Luas: 12.500 m² · 9 Lantai</span>
+    <span>·</span>
+    <span style="color:#334155;">Kontrak PLN: 2.000 kVA I-3/TR</span>
+    <span>·</span>
+    <span style="color:#334155;">Tarif: Rp 1.450/kWh</span>
+  </div>
+  <div style="font-size:10px;color:#1e293b;display:flex;gap:16px;">
+    <span style="color:#334155;">Data: BEMS AMDI Live</span>
+    <span>·</span>
+    <span style="color:#334155;">AI: ERSUS Intelligence Layer</span>
+    <span>·</span>
+    <span id="footer-time" style="color:#334155;" class="mono">--:--</span>
+  </div>
+</div>
+
+<script>
+// ═══════════════════ NAVIGATION ═══════════════════
+let currentScreen = 0;
+const screens = document.querySelectorAll('.screen');
+const tabs = document.querySelectorAll('.nav-tab');
+
+function showScreen(n) {
+  screens.forEach((s, i) => {
+    s.classList.toggle('active', i === n);
+  });
+  tabs.forEach((t, i) => {
+    t.classList.toggle('active', i === n);
+  });
+  currentScreen = n;
+  if (n === 3 && !chatStarted) startChat();
+}
+
+// ═══════════════════ CLOCK ═══════════════════
+function updateClock() {
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  const s = String(now.getSeconds()).padStart(2,'0');
+  const timeStr = `${h}:${m}:${s}`;
+  document.getElementById('clock').textContent = timeStr;
+  document.getElementById('footer-time').textContent = `${h}:${m}`;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ═══════════════════ TREND CHART ═══════════════════
+const trendData = [
+  // [actual, baseline, anomaly] - 30min intervals from 06:00
+  [85, 90, false], [120, 115, false], [310, 300, false], [520, 490, false],
+  [680, 650, false], [740, 720, false], [780, 750, false], [820, 780, false],
+  [860, 820, false], [890, 840, false], [870, 850, false], [850, 840, false],
+  [880, 860, true],  [920, 870, true],  [890, 860, false], [870, 850, false],
+  [850, 840, false], [840, 830, false], [847, 830, false]
+];
+
+function renderChart() {
+  const el = document.getElementById('trend-chart');
+  const maxVal = Math.max(...trendData.map(d => d[0]));
+  el.innerHTML = trendData.map((d, i) => {
+    const h = Math.round((d[0] / maxVal) * 100);
+    const bh = Math.round((d[1] / maxVal) * 100);
+    const color = d[2] ? '#EF4444' : (i === trendData.length - 1 ? '#60A5FA' : '#3B82F6');
+    return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;position:relative;">
+      <div style="width:100%;height:${bh}%;background:rgba(245,166,35,0.15);border-top:1px dashed rgba(245,166,35,0.4);position:absolute;bottom:0;left:0;"></div>
+      <div style="width:calc(100% - 2px);height:${h}%;background:${color};border-radius:2px 2px 0 0;position:absolute;bottom:0;opacity:0.85;transition:height 0.5s;"></div>
+    </div>`;
+  }).join('');
+}
+renderChart();
+
+// ═══════════════════ AI FEED ═══════════════════
+const aiFeedItems = [
+  { color: '#EF4444', icon: 'ph-warning-octagon', text: '<strong style="color:#F87171">KRITIS:</strong> AHU 3B power reading -0.05W terdeteksi. Meter malfunction dikonfirmasi. Konsumsi tidak terukur.', time: '14:28' },
+  { color: '#F59E0B', icon: 'ph-warning', text: '<strong style="color:#FCD34D">PERINGATAN:</strong> Meeting Room 301, 302, 303 kosong selama 47 menit — AC masih aktif. Estimasi waste: Rp 48.720.', time: '14:15' },
+  { color: '#10B981', icon: 'ph-check-circle', text: '<strong style="color:#34D399">TINDAKAN:</strong> Perintah dikirim ke BMS — set AC R. Meeting ke 28°C (mode hemat). Estimasi hemat: Rp 28.000/jam.', time: '14:16' },
+  { color: '#3B82F6', icon: 'ph-brain', text: '<strong style="color:#60A5FA">INSIGHT:</strong> Baseline hari ini disesuaikan: occupancy 50% + suhu luar 34°C = target 7.200 kWh (vs normal 8.100 kWh).', time: '07:00' },
+  { color: '#8B5CF6', icon: 'ph-trend-up', text: '<strong style="color:#A78BFA">OPTIMASI:</strong> Jadwal pre-cooling chiller digeser 30 menit lebih awal berdasarkan prediksi beban. Hemat: ~180 kWh.', time: '06:30' },
+];
+
+function renderAiFeed() {
+  const el = document.getElementById('ai-feed');
+  el.innerHTML = aiFeedItems.map((item, i) => `
+    <div class="ai-bubble slide-up" style="animation-delay:${i * 0.1}s">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+        <div style="display:flex;gap:8px;align-items:flex-start;">
+          <i class="ph ${item.icon}" style="color:${item.color};font-size:14px;margin-top:2px;flex-shrink:0;"></i>
+          <div style="font-size:12px;color:#cbd5e1;line-height:1.6;">${item.text}</div>
+        </div>
+        <span style="font-size:10px;color:#475569;white-space:nowrap;margin-top:2px;" class="mono">${item.time}</span>
+      </div>
+    </div>
+  `).join('');
+}
+renderAiFeed();
+
+// ═══════════════════ AI CHAT ═══════════════════
+let chatStarted = false;
+let chatStep = 0;
+
+const chatFlow = [
+  {
+    user: 'Apa yang terjadi dengan AHU 3B?',
+    ai: 'AHU 3B menunjukkan power reading -0.05 Watt — nilai ini secara fisika mustahil untuk beban HVAC. Tegangan (410V) dan arus (3.9A) normal, artinya unit beroperasi. Sumber anomali: Power Transducer atau Current Transformer sensor mengalami kegagalan. Akibatnya, konsumsi nyata AHU 3B tidak tercatat di sistem BEMS sejak sensor rusak.',
+    delay: 2000
+  },
+  {
+    user: 'Berapa kerugian finansialnya?',
+    ai: 'Berdasarkan perbandingan dengan AHU 3A (unit identik: 2.421 kWh), estimasi konsumsi AHU 3B adalah 2.000–2.400 kWh per bulan. Dengan tarif PLN Rp 1.450/kWh, nilai yang tidak terukur sekitar Rp 2,9 – 3,5 juta per bulan, atau Rp 35–42 juta per tahun — hanya dari satu meter yang rusak.',
+    delay: 2500
+  },
+  {
+    user: 'Apa rekomendasi ERSUS?',
+    ai: 'ERSUS merekomendasikan 3 tindakan: (1) Ganti Power Transducer AHU 3B segera — estimasi biaya Rp 2-3 juta, payback < 1 bulan. (2) Audit historis 90 hari untuk rekonstruksi konsumsi AHU 3B yang tidak tercatat. (3) Pasang redundant sensor di semua AHU kritis sebagai cross-validation — ini fitur standar ERSUS yang tidak ada di BEMS konvensional.',
+    delay: 3000
+  },
+  {
+    user: 'Bagaimana ERSUS berbeda dari BEMS?',
+    ai: 'BEMS = sensor display. ERSUS = intelligence layer. BEMS menampilkan -0.05W tanpa komentar. ERSUS mendeteksi bahwa -0.05W mustahil, menghitung implikasi finansialnya, membandingkan dengan unit serupa, dan merekomendasikan tindakan — semua secara otomatis. ERSUS juga mengintegrasikan data kalender, badge akses, cuaca BMKG, dan historical pattern untuk analisis yang lebih lengkap.',
+    delay: 2500
+  }
+];
+
+function startChat() {
+  chatStarted = true;
+  const el = document.getElementById('chat-messages');
+  el.innerHTML = `
+    <div style="text-align:center;padding:20px;">
+      <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2);border-radius:10px;padding:10px 16px;">
+        <i class="ph ph-robot" style="color:#8B5CF6;"></i>
+        <span style="font-size:12px;color:#8B5CF6;">ERSUS AI siap. Tekan "Tanya" untuk memulai demo interaktif.</span>
+      </div>
+    </div>
+  `;
+  renderActionsLog();
+}
+
+function nextQuestion() {
+  if (chatStep >= chatFlow.length) {
+    chatStep = 0;
+    document.getElementById('chat-messages').innerHTML = '';
+    startChat();
+    return;
+  }
+
+  const flow = chatFlow[chatStep];
+  const el = document.getElementById('chat-messages');
+  const inputEl = document.getElementById('chat-input-display');
+
+  inputEl.textContent = flow.user;
+  inputEl.style.color = '#e2e8f0';
+
+  // Add user message
+  const userMsg = document.createElement('div');
+  userMsg.style.cssText = 'display:flex;justify-content:flex-end;';
+  userMsg.innerHTML = `
+    <div style="background:rgba(59,130,246,0.2);border:1px solid rgba(59,130,246,0.3);border-radius:12px 12px 3px 12px;padding:10px 14px;max-width:80%;">
+      <div style="font-size:13px;color:#e2e8f0;">${flow.user}</div>
+    </div>
+  `;
+  el.appendChild(userMsg);
+  el.scrollTop = el.scrollHeight;
+
+  // Show typing indicator
+  setTimeout(() => {
+    inputEl.textContent = 'ERSUS AI sedang menganalisis...';
+    inputEl.style.color = '#8B5CF6';
+
+    const typingEl = document.createElement('div');
+    typingEl.id = 'typing-indicator';
+    typingEl.innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="background:linear-gradient(135deg,#8B5CF6,#3B82F6);width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i class="ph ph-robot" style="color:white;font-size:13px;"></i>
+        </div>
+        <div style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2);border-radius:12px 12px 12px 3px;padding:10px 14px;">
+          <div style="display:flex;gap:4px;align-items:center;">
+            <div style="width:6px;height:6px;border-radius:50%;background:#8B5CF6;animation:pulse-dot 0.8s infinite;"></div>
+            <div style="width:6px;height:6px;border-radius:50%;background:#8B5CF6;animation:pulse-dot 0.8s infinite 0.2s;"></div>
+            <div style="width:6px;height:6px;border-radius:50%;background:#8B5CF6;animation:pulse-dot 0.8s infinite 0.4s;"></div>
+          </div>
+        </div>
+      </div>
+    `;
+    el.appendChild(typingEl);
+    el.scrollTop = el.scrollHeight;
+
+    setTimeout(() => {
+      typingEl.remove();
+
+      const aiMsg = document.createElement('div');
+      aiMsg.style.cssText = 'display:flex;align-items:flex-start;gap:8px;';
+      aiMsg.innerHTML = `
+        <div style="background:linear-gradient(135deg,#8B5CF6,#3B82F6);width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:4px;">
+          <i class="ph ph-robot" style="color:white;font-size:13px;"></i>
+        </div>
+        <div style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2);border-radius:12px 12px 12px 3px;padding:12px 16px;max-width:85%;">
+          <div style="font-size:12px;color:#e2e8f0;line-height:1.7;">${flow.ai}</div>
+        </div>
+      `;
+      el.appendChild(aiMsg);
+      el.scrollTop = el.scrollHeight;
+
+      inputEl.textContent = chatStep < chatFlow.length - 1 ? 'Tanya ERSUS AI...' : 'Demo selesai — tekan lagi untuk ulangi';
+      inputEl.style.color = '#64748b';
+    }, flow.delay);
+
+    chatStep++;
+  }, 400);
+}
+
+// ═══════════════════ ACTIONS LOG ═══════════════════
+function renderActionsLog() {
+  const actions = [
+    { time: '14:16', icon: 'ph-thermometer', color: '#10B981', text: 'Set AC Meeting Room 301, 302, 303 → 28°C (hemat mode)', status: 'DONE' },
+    { time: '13:45', icon: 'ph-bell', color: '#F87171', text: 'Alert dikirim ke Facility Team: AHU 3B meter malfunction', status: 'SENT' },
+    { time: '12:00', icon: 'ph-chart-line', color: '#60A5FA', text: 'Baseline recalibrated: occupancy update + cuaca 34°C BMKG', status: 'AUTO' },
+    { time: '09:30', icon: 'ph-snowflake', color: '#A78BFA', text: 'Chiller pre-cool schedule dioptimasi → shift 30 menit lebih awal', status: 'AUTO' },
+    { time: '07:00', icon: 'ph-sun', color: '#FCD34D', text: 'HVAC startup sequence optimized berdasarkan prediksi occupancy', status: 'AUTO' },
+    { time: '06:30', icon: 'ph-play', color: '#34D399', text: 'ERSUS AI monitoring aktif — semua 4 AHU online, baseline loaded', status: 'INIT' },
+  ];
+
+  document.getElementById('actions-log').innerHTML = actions.map(a => `
+    <div style="display:flex;gap:10px;align-items:center;padding:8px 10px;background:rgba(255,255,255,0.02);border-radius:8px;">
+      <span style="font-size:10px;color:#475569;white-space:nowrap;" class="mono">${a.time}</span>
+      <i class="ph ${a.icon}" style="color:${a.color};font-size:14px;flex-shrink:0;"></i>
+      <div style="font-size:12px;color:#94a3b8;flex:1;line-height:1.4;">${a.text}</div>
+      <span class="status-chip" style="font-size:9px;white-space:nowrap;padding:2px 8px;
+        ${a.status === 'DONE' ? 'background:rgba(16,185,129,0.1);color:#34D399;border:1px solid rgba(16,185,129,0.2);' :
+          a.status === 'SENT' ? 'background:rgba(239,68,68,0.1);color:#F87171;border:1px solid rgba(239,68,68,0.2);' :
+          'background:rgba(59,130,246,0.1);color:#93C5FD;border:1px solid rgba(59,130,246,0.2);'}
+      ">${a.status}</span>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════ KEYBOARD NAV ═══════════════════
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === ' ') {
+    showScreen((currentScreen + 1) % 5);
+    e.preventDefault();
+  }
+  if (e.key === 'ArrowLeft') {
+    showScreen((currentScreen - 1 + 5) % 5);
+    e.preventDefault();
+  }
+  if (e.key >= '1' && e.key <= '5') {
+    showScreen(parseInt(e.key) - 1);
+  }
+});
+
+// ═══════════════════ AUTO-REFRESH KPI (simulate live) ═══════════════════
+let kwh = 4821;
+setInterval(() => {
+  kwh += Math.round(Math.random() * 3 + 1);
+}, 8000);
+
+// Init
+renderChart();
+</script>
+
+</body>
+</html>
