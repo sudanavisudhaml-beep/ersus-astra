@@ -1,0 +1,13 @@
+{
+  "name": "ersus-astra",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ERSUS — ESG Ready Smart Utility System (static single-file app)",
+  "scripts": {
+    "lint": "html-validate index.html",
+    "serve": "python3 -m http.server 8000"
+  },
+  "devDependencies": {
+    "html-validate": "^9.0.0"
+  }
+}
