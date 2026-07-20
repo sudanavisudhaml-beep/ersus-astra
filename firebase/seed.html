@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ERSUS — Firebase Seed (sekali jalan)</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#04060d;color:#f4f7fb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+  .card{width:100%;max-width:720px;background:linear-gradient(135deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:32px;backdrop-filter:blur(30px)}
+  h1{font-size:22px;font-weight:800;letter-spacing:-0.3px}
+  .sub{font-size:13px;color:#8b97ab;margin-top:6px;margin-bottom:20px}
+  .note{font-size:12.5px;color:#9fc4ff;background:rgba(10,132,255,0.06);border:1px solid rgba(10,132,255,0.18);border-radius:12px;padding:12px 14px;margin-bottom:18px;line-height:1.6}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:13px 20px;font-size:14px;font-weight:700;color:#fff;border:none;border-radius:12px;background:linear-gradient(135deg,#0a84ff,#00d4ff);cursor:pointer;box-shadow:0 8px 24px rgba(10,132,255,0.4)}
+  .btn:disabled{opacity:0.5;cursor:not-allowed}
+  .btn.ghost{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.14);box-shadow:none}
+  .row{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+  #log{background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;font-family:'JetBrains Mono',ui-monospace,Consolas,monospace;font-size:12px;line-height:1.7;max-height:340px;overflow-y:auto;white-space:pre-wrap}
+  .ok{color:#34e5a3}.warn{color:#ffb63d}.err{color:#ff8b96}.dim{color:#5a6579}.info{color:#9fc4ff}
+  a{color:#00d4ff}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>ERSUS · Firebase Seed</h1>
+  <div class="sub">Menyiapkan 4 akun role + data awal AMDI ke project <b>astra-ersus</b>. Jalankan <b>sekali saja</b>.</div>
+
+  <div class="note">
+    <b>Sebelum menekan tombol</b>, pastikan di <a href="https://console.firebase.google.com/project/astra-ersus" target="_blank">Firebase Console</a>:<br>
+    1. <b>Authentication → Sign-in method → Email/Password → Enable</b><br>
+    2. <b>Firestore Database → Create database</b> (region <i>asia-southeast2</i>)<br>
+    Lalu jalankan seed. Setelah selesai, deploy <b>firestore.rules</b> dan hapus/abaikan halaman ini.
+  </div>
+
+  <div class="row">
+    <button class="btn" id="run">▶ Jalankan Seed</button>
+    <button class="btn ghost" id="dataOnly">Seed Data Saja (tanpa akun)</button>
+  </div>
+
+  <div id="log"><span class="dim">Log akan muncul di sini…</span></div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+  import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+  import { firebaseConfig } from "./firebase-config.js";
+
+  const logEl = document.getElementById('log');
+  let first = true;
+  function log(msg, cls) {
+    if (first) { logEl.innerHTML = ''; first = false; }
+    const span = document.createElement('span');
+    span.className = cls || '';
+    span.textContent = msg + '\n';
+    logEl.appendChild(span);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  let app, auth, db;
+  try {
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+  } catch (e) {
+    log('✗ Gagal inisialisasi Firebase: ' + e.message, 'err');
+  }
+
+  const USERS = [
+    { email:'superadmin@ersus.astra.co.id', password:'Ersus@2026', name:'Super Administrator', role:'Super Admin', roleKey:'superadmin' },
+    { email:'admin@ersus.astra.co.id',       password:'Ersus@2026', name:'Administrator',       role:'Admin',       roleKey:'admin' },
+    { email:'energy.manager@ersus.astra.co.id',password:'Ersus@2026', name:'Energy Manager',    role:'Energy Manager', roleKey:'energy' },
+    { email:'operator@ersus.astra.co.id',    password:'Ersus@2026', name:'Operator',            role:'Operator / Viewer', roleKey:'operator' }
+  ];
+
+  const SITE = { id:'AMDI-AHO-01', name:'Gedung AMDI', location:'Astra HQ, Jakarta Selatan', area:12500, floors:9, contractKva:2000, installedKva:2500, tariff:'PLN I-3/TR', rateKwh:1450, bemsLive:true };
+  const ASSETS = [
+    { id:'AHU-3A', name:'AHU 3A', type:'AHU', loc:'Lantai 3 · Zone A', status:'ok', volt:407.07, ampere:3.65, power:1.05, energyKwh:2421, fanHz:37 },
+    { id:'AHU-3B', name:'AHU 3B', type:'AHU', loc:'Lantai 3 · Zone B', status:'crit', volt:410.1, ampere:3.9, power:-0.05, energyKwh:5.77, fanHz:33, note:'Meter malfunction' },
+    { id:'AHU-4A', name:'AHU 4A', type:'AHU', loc:'Lantai 4 · Zone A', status:'warn', volt:385.94, ampere:9.02, power:2840, energyKwh:4042, fanHz:41 },
+    { id:'AHU-4B', name:'AHU 4B', type:'AHU', loc:'Lantai 4 · Zone B', status:'warn', volt:406.01, ampere:3.5, power:1100, energyKwh:1440, fanHz:49 },
+    { id:'CH-01', name:'Chiller 1', type:'Chiller', loc:'Rooftop', status:'ok', power:245000, cop:3.8, load:78 },
+    { id:'CH-02', name:'Chiller 2', type:'Chiller', loc:'Rooftop', status:'crit', power:228000, cop:3.1, load:65, note:'COP degradation' }
+  ];
+  const ANOMALIES = [
+    { id:'ANO-001', sev:'HIGH', title:'AHU 3B — Meter Malfunction', wasteKwh:2200, wasteIdr:3190000, status:'open' },
+    { id:'ANO-002', sev:'HIGH', title:'Chiller 2 — Degradasi COP (−18,4%)', wasteKwh:180, wasteIdr:261000, status:'open' },
+    { id:'ANO-003', sev:'MED',  title:'R. Meeting 301-303 kosong, AC ON', wasteKwh:648, wasteIdr:939600, status:'ack' },
+    { id:'ANO-004', sev:'MED',  title:'AHU 4B — Fan Overspeeding', wasteKwh:215, wasteIdr:311750, status:'ack' },
+    { id:'ANO-005', sev:'LOW',  title:'Operasi di Luar Jam Kerja', wasteKwh:672, wasteIdr:974400, status:'resolved' }
+  ];
+  const SEU = [
+    { id:'hvac', name:'HVAC', pct:52 }, { id:'lighting', name:'Pencahayaan', pct:15 },
+    { id:'server', name:'Server Room', pct:13 }, { id:'office', name:'Office Equipment', pct:8 },
+    { id:'liftpump', name:'Lift & Pompa', pct:5 }, { id:'others', name:'Lainnya', pct:7 }
+  ];
+
+  async function seedData() {
+    log('› Seeding data operasional…', 'info');
+    await setDoc(doc(db, 'sites', SITE.id), { ...SITE, updatedAt: serverTimestamp() });
+    log('  ✓ sites/' + SITE.id, 'ok');
+    for (const a of ASSETS) { await setDoc(doc(db, 'assets', a.id), { siteId: SITE.id, ...a, updatedAt: serverTimestamp() }); log('  ✓ assets/' + a.id, 'ok'); }
+    for (const an of ANOMALIES) { await setDoc(doc(db, 'anomalies', an.id), { siteId: SITE.id, ...an, detectedAt: serverTimestamp() }); log('  ✓ anomalies/' + an.id, 'ok'); }
+    for (const s of SEU) { await setDoc(doc(db, 'seu', s.id), { siteId: SITE.id, ...s }); }
+    log('  ✓ seu (6 dokumen)', 'ok');
+    await setDoc(doc(db, 'changelog', 'v0.6.0'), { version:'0.6.0', date:'2026-07-20', summary:'Integrasi Firebase Auth + Firestore', createdAt: serverTimestamp() });
+    log('  ✓ changelog/v0.6.0', 'ok');
+    log('✓ Data selesai di-seed.', 'ok');
+  }
+
+  async function seedUsers() {
+    log('› Membuat 4 akun role di Firebase Auth…', 'info');
+    for (const u of USERS) {
+      try {
+        const cred = await createUserWithEmailAndPassword(auth, u.email, u.password);
+        await setDoc(doc(db, 'users', cred.user.uid), {
+          email:u.email, name:u.name, role:u.role, roleKey:u.roleKey, site:SITE.id, active:true, createdAt: serverTimestamp()
+        });
+        log('  ✓ ' + u.email + '  (role: ' + u.role + ')', 'ok');
+      } catch (err) {
+        const c = err.code || '';
+        if (c === 'auth/email-already-in-use') {
+          // Sudah ada → coba sign in untuk menulis/menyegarkan dokumen role
+          try {
+            const cred = await signInWithEmailAndPassword(auth, u.email, u.password);
+            await setDoc(doc(db, 'users', cred.user.uid), { email:u.email, name:u.name, role:u.role, roleKey:u.roleKey, site:SITE.id, active:true }, { merge:true });
+            log('  ↻ ' + u.email + ' sudah ada — dokumen role diperbarui.', 'warn');
+          } catch (e2) {
+            log('  ↻ ' + u.email + ' sudah ada (role doc dilewati: ' + (e2.code||e2.message) + ')', 'warn');
+          }
+        } else if (c === 'auth/operation-not-allowed') {
+          log('  ✗ Email/Password belum di-enable di Console → aktifkan dulu.', 'err');
+          throw err;
+        } else {
+          log('  ✗ ' + u.email + ' — ' + (c || err.message), 'err');
+        }
+      }
+    }
+    try { await signOut(auth); } catch (_) {}
+    log('✓ Akun role selesai.', 'ok');
+  }
+
+  async function run(withUsers) {
+    document.getElementById('run').disabled = true;
+    document.getElementById('dataOnly').disabled = true;
+    try {
+      if (!db) throw new Error('Firebase belum siap (cek koneksi / config).');
+      if (withUsers) await seedUsers();
+      await seedData();
+      log('', '');
+      log('🎉 SELESAI. Silakan tes login di ../login.html', 'ok');
+      log('   Akun: superadmin@ / admin@ / energy.manager@ / operator@ersus.astra.co.id · pw Ersus@2026', 'dim');
+      log('   Jangan lupa deploy firestore.rules di Console.', 'dim');
+    } catch (e) {
+      log('✗ Seed berhenti: ' + (e.message || e), 'err');
+      log('  Cek: Email/Password enabled? Firestore dibuat? Rules mengizinkan (mode test saat seed)?', 'warn');
+    } finally {
+      document.getElementById('run').disabled = false;
+      document.getElementById('dataOnly').disabled = false;
+    }
+  }
+
+  document.getElementById('run').onclick = () => run(true);
+  document.getElementById('dataOnly').onclick = () => run(false);
+</script>
+</body>
+</html>
