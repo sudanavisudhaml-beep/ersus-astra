@@ -10,9 +10,29 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/) & [Semantic Ver
 ## [Unreleased]
 ### Rencana
 - Integrasi Firebase (Auth + Firestore) — lihat `docs/FIREBASE_SETUP.md`
-- Platform role-based (menu berbeda per role)
-- Platform fully self-contained (lepas dependensi Tailwind CDN)
-- Sinkronisasi branch `main` dengan rilis terbaru
+- Pendalaman tiap modul (data live dari Firestore, kontrol device)
+- Menu/akses berbeda per role (gating penuh, bukan hanya read-only)
+
+---
+
+## [0.5.0] — 2026-07-20
+### Changed
+- **Platform ERSUS dirombak total** ke tema **dark liquid-glass** (selaras dengan login page):
+  sidebar navigasi, top bar, glass cards, aksen electric blue/cyan.
+- Login sekarang **langsung masuk Platform (Overview)** — tidak lagi ke halaman Arsitektur.
+### Added
+- 6 modul operasional dalam satu shell: Overview, SEU Analysis, EnPI & Baseline,
+  Asset Monitor, Anomaly Center, Governance (data real BEMS AMDI).
+- Role-aware UI: chip nama+role di top bar; **Operator/Viewer = read-only** (tombol aksi non-aktif).
+- `index.html` kini **100% self-contained** — ikon inline SVG, tanpa Tailwind/Phosphor/font CDN
+  (menghindari kegagalan CDN di jaringan Astra).
+### Removed
+- Halaman **Arsitektur / Dokumentasi** (mode docs + 6 subhalaman React) dihapus dari aplikasi.
+  Tetap tersimpan di **git history** (commit sebelum v0.5.0) — tidak hilang, bisa dipulihkan.
+- Dependensi React 18 UMD + Babel precompiled (platform lama) — digantikan vanilla JS.
+### Login
+- Menghapus kalimat "Platform AI yang mengubah data BEMS…" di brand panel.
+- Revisi copyright → "2026 · System Development · GA Departemen / PT. Astra International Tbk".
 
 ---
 
