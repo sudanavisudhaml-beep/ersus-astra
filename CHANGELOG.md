@@ -9,10 +9,25 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/) & [Semantic Ver
 
 ## [Unreleased]
 ### Rencana
-- Platform baca data live dari Firestore (assets, anomalies, seu, sites)
 - Custom claim `role` via Admin SDK (saat ini role disimpan di `users/{uid}`)
 - Menu/akses berbeda per role (gating penuh, bukan hanya read-only)
 - Kontrol device (write-back) via ERSUS
+- Realtime listener (onSnapshot) agar dashboard update tanpa reload
+
+---
+
+## [0.7.0] — 2026-07-20
+### Added
+- **Platform baca data LIVE dari Firestore** (`index.html`):
+  - Renderer di-refactor jadi data-driven (`renderSEU/renderAssets/renderAnomalies`).
+  - Modul Firebase memuat koleksi `assets`, `anomalies`, `seu` setelah user login via
+    Firebase, lalu me-render ulang kartu aset, tabel anomali, dan distribusi SEU.
+  - Badge jumlah anomali kritis & indikator sumber data ("LIVE · Firestore") ikut ter-update.
+  - **Fallback penuh**: bila Firebase tak tersedia / user login mode demo / Firestore kosong,
+    platform tetap tampil pakai data lokal (tanpa error).
+- `firebase/seed.html`: skema `assets` dilengkapi field tampilan (`statusLabel`, `dispV/P/Kwh`)
+  dan `anomalies` diberi `desc`, `seu` diberi `order` — agar cocok dgn renderer platform.
+- `firebase/firestore.rules`: tambah aturan koleksi `seu` (baca semua role, tulis Admin+).
 
 ---
 

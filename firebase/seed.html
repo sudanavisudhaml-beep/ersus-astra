@@ -75,24 +75,24 @@
 
   const SITE = { id:'AMDI-AHO-01', name:'Gedung AMDI', location:'Astra HQ, Jakarta Selatan', area:12500, floors:9, contractKva:2000, installedKva:2500, tariff:'PLN I-3/TR', rateKwh:1450, bemsLive:true };
   const ASSETS = [
-    { id:'AHU-3A', name:'AHU 3A', type:'AHU', loc:'Lantai 3 · Zone A', status:'ok', volt:407.07, ampere:3.65, power:1.05, energyKwh:2421, fanHz:37 },
-    { id:'AHU-3B', name:'AHU 3B', type:'AHU', loc:'Lantai 3 · Zone B', status:'crit', volt:410.1, ampere:3.9, power:-0.05, energyKwh:5.77, fanHz:33, note:'Meter malfunction' },
-    { id:'AHU-4A', name:'AHU 4A', type:'AHU', loc:'Lantai 4 · Zone A', status:'warn', volt:385.94, ampere:9.02, power:2840, energyKwh:4042, fanHz:41 },
-    { id:'AHU-4B', name:'AHU 4B', type:'AHU', loc:'Lantai 4 · Zone B', status:'warn', volt:406.01, ampere:3.5, power:1100, energyKwh:1440, fanHz:49 },
-    { id:'CH-01', name:'Chiller 1', type:'Chiller', loc:'Rooftop', status:'ok', power:245000, cop:3.8, load:78 },
-    { id:'CH-02', name:'Chiller 2', type:'Chiller', loc:'Rooftop', status:'crit', power:228000, cop:3.1, load:65, note:'COP degradation' }
+    { id:'AHU-3A', name:'AHU 3A', type:'AHU', loc:'Lantai 3 · Zone A', status:'ok',   statusLabel:'NORMAL',     dispV:'407.07 V', dispP:'1.05 W',  dispKwh:'2421', volt:407.07, ampere:3.65, power:1.05,  energyKwh:2421, fanHz:37, note:'Operasi sesuai baseline. Fan optimal.' },
+    { id:'AHU-3B', name:'AHU 3B', type:'AHU', loc:'Lantai 3 · Zone B', status:'crit', statusLabel:'METER FAIL', dispV:'410.1 V',  dispP:'−0.05 W', dispKwh:'5.77', volt:410.1,  ampere:3.9,  power:-0.05, energyKwh:5.77, fanHz:33, note:'Power −0.05W mustahil → CT/transducer rusak. Konsumsi tak terukur.' },
+    { id:'AHU-4A', name:'AHU 4A', type:'AHU', loc:'Lantai 4 · Zone A', status:'warn', statusLabel:'HIGH LOAD',  dispV:'385.94 V', dispP:'2.84 kW', dispKwh:'4042', volt:385.94, ampere:9.02, power:2840,  energyKwh:4042, fanHz:41, note:'Konsumsi tertinggi. Cek filter/coil.' },
+    { id:'AHU-4B', name:'AHU 4B', type:'AHU', loc:'Lantai 4 · Zone B', status:'warn', statusLabel:'FAN MAX',    dispV:'406.01 V', dispP:'1.1 kW',  dispKwh:'1440', volt:406.01, ampere:3.5,  power:1100,  energyKwh:1440, fanHz:49, note:'Fan 49Hz mendekati max, efisiensi VFD turun.' },
+    { id:'CH-01', name:'Chiller 1', type:'Chiller', loc:'Rooftop', status:'ok',   statusLabel:'RUNNING',  dispV:'—', dispP:'245 kW', dispKwh:'COP 3.8', power:245000, cop:3.8, load:78, note:'Beroperasi normal, COP sehat.' },
+    { id:'CH-02', name:'Chiller 2', type:'Chiller', loc:'Rooftop', status:'crit', statusLabel:'COP DROP', dispV:'—', dispP:'228 kW', dispKwh:'COP 3.1', power:228000, cop:3.1, load:65, note:'Degradasi COP −18,4% → maintenance.' }
   ];
   const ANOMALIES = [
-    { id:'ANO-001', sev:'HIGH', title:'AHU 3B — Meter Malfunction', wasteKwh:2200, wasteIdr:3190000, status:'open' },
-    { id:'ANO-002', sev:'HIGH', title:'Chiller 2 — Degradasi COP (−18,4%)', wasteKwh:180, wasteIdr:261000, status:'open' },
-    { id:'ANO-003', sev:'MED',  title:'R. Meeting 301-303 kosong, AC ON', wasteKwh:648, wasteIdr:939600, status:'ack' },
-    { id:'ANO-004', sev:'MED',  title:'AHU 4B — Fan Overspeeding', wasteKwh:215, wasteIdr:311750, status:'ack' },
-    { id:'ANO-005', sev:'LOW',  title:'Operasi di Luar Jam Kerja', wasteKwh:672, wasteIdr:974400, status:'resolved' }
+    { id:'ANO-001', sev:'HIGH', title:'AHU 3B — Meter Malfunction', desc:'Konsumsi tidak terukur/tertagih', wasteKwh:2200, wasteIdr:3190000, status:'open' },
+    { id:'ANO-002', sev:'HIGH', title:'Chiller 2 — Degradasi COP (−18,4%)', desc:'Efisiensi pendinginan turun', wasteKwh:180, wasteIdr:261000, status:'open' },
+    { id:'ANO-003', sev:'MED',  title:'R. Meeting 301-303 kosong, AC ON', desc:'3 ruangan, ± 3 jam/hari', wasteKwh:648, wasteIdr:939600, status:'ack' },
+    { id:'ANO-004', sev:'MED',  title:'AHU 4B — Fan Overspeeding', desc:'Fan 49Hz saat suhu tercapai', wasteKwh:215, wasteIdr:311750, status:'ack' },
+    { id:'ANO-005', sev:'LOW',  title:'Operasi di Luar Jam Kerja', desc:'AHU aktif sebelum 07:00', wasteKwh:672, wasteIdr:974400, status:'resolved' }
   ];
   const SEU = [
-    { id:'hvac', name:'HVAC', pct:52 }, { id:'lighting', name:'Pencahayaan', pct:15 },
-    { id:'server', name:'Server Room', pct:13 }, { id:'office', name:'Office Equipment', pct:8 },
-    { id:'liftpump', name:'Lift & Pompa', pct:5 }, { id:'others', name:'Lainnya', pct:7 }
+    { id:'hvac', name:'HVAC', pct:52, order:0 }, { id:'lighting', name:'Pencahayaan', pct:15, order:1 },
+    { id:'server', name:'Server Room', pct:13, order:2 }, { id:'office', name:'Office Equipment', pct:8, order:3 },
+    { id:'liftpump', name:'Lift & Pompa', pct:5, order:4 }, { id:'others', name:'Lainnya', pct:7, order:5 }
   ];
 
   async function seedData() {
