@@ -354,6 +354,7 @@
 
 <script>
   // ─────────── ACCOUNTS (4 roles, mirrors AGAVA role structure) ───────────
+  // Password ini juga dipakai saat seed ke Firebase Auth (firebase/seed.html).
   const ACCOUNTS = {
     superadmin: { email: 'superadmin@ersus.astra.co.id', password: 'Ersus@2026', name: 'Super Administrator', role: 'Super Admin', roleKey: 'superadmin' },
     admin:      { email: 'admin@ersus.astra.co.id',        password: 'Ersus@2026', name: 'Administrator',       role: 'Admin',       roleKey: 'admin' },
@@ -379,42 +380,54 @@
     else { pw.type = 'password'; use.setAttribute('href', '#i-eye'); }
   }
 
-  function doLogin(e) {
+  // ── Shared UI helpers (dipakai handler lokal & Firebase) ──
+  function loginBusy(on) {
+    document.getElementById('login-btn').disabled = on;
+    document.getElementById('login-btn-text').innerHTML = on
+      ? '<svg class="ic spin-i" style="margin-right:8px"><use href="#i-loader"/></svg>Memverifikasi...'
+      : '<svg class="ic" style="margin-right:8px"><use href="#i-login"/></svg>Masuk ke ERSUS';
+  }
+  function loginError(msg) {
+    document.getElementById('err-msg').textContent = msg;
+    document.getElementById('err-box').style.display = 'flex';
+    document.getElementById('glass-shell').classList.add('shake');
+    setTimeout(() => document.getElementById('glass-shell').classList.remove('shake'), 420);
+    loginBusy(false);
+    document.getElementById('password').value = '';
+    document.getElementById('password').focus();
+  }
+  function enterPlatform(p) {
+    document.getElementById('err-box').style.display = 'none';
+    try {
+      localStorage.setItem('ersus_session', JSON.stringify({
+        auth: true, name: p.name, role: p.role, roleKey: p.roleKey,
+        email: p.email, uid: p.uid || null, source: p.source || 'local', ts: Date.now()
+      }));
+    } catch (e) {}
+    document.getElementById('success-name').textContent = 'Selamat datang, ' + p.name;
+    document.getElementById('success-role').textContent = p.role + ' · Memuat ERSUS Platform...';
+    document.getElementById('success').classList.add('show');
+    setTimeout(() => { window.location.href = 'index.html'; }, 1400);
+  }
+  function localAuth(email, pw) {
+    return Object.values(ACCOUNTS).find(a => a.email.toLowerCase() === email && a.password === pw) || null;
+  }
+
+  // Default handler = mode demo lokal (dipakai bila modul Firebase gagal dimuat).
+  window.doLogin = function (e) {
     e.preventDefault();
     const email = document.getElementById('email').value.trim().toLowerCase();
     const pw = document.getElementById('password').value;
-    const btn = document.getElementById('login-btn');
-    const btnText = document.getElementById('login-btn-text');
-    const errBox = document.getElementById('err-box');
-    const errMsg = document.getElementById('err-msg');
-
-    btn.disabled = true;
-    btnText.innerHTML = '<svg class="ic spin-i" style="margin-right:8px"><use href="#i-loader"/></svg>Memverifikasi...';
-
+    loginBusy(true);
     setTimeout(() => {
-      const match = Object.values(ACCOUNTS).find(a => a.email.toLowerCase() === email && a.password === pw);
-      if (match) {
-        errBox.style.display = 'none';
-        try {
-          const store = { auth: true, name: match.name, role: match.role, roleKey: match.roleKey, email: match.email, ts: Date.now() };
-          localStorage.setItem('ersus_session', JSON.stringify(store));
-        } catch (err) {}
-        document.getElementById('success-name').textContent = 'Selamat datang, ' + match.name;
-        document.getElementById('success-role').textContent = match.role + ' · Memuat ERSUS Platform...';
-        document.getElementById('success').classList.add('show');
-        setTimeout(() => { window.location.href = 'index.html'; }, 1500);
-      } else {
-        errBox.style.display = 'flex';
-        errMsg.textContent = email ? 'Email atau password salah. Coba lagi.' : 'Silakan pilih role atau isi kredensial.';
-        document.getElementById('glass-shell').classList.add('shake');
-        setTimeout(() => document.getElementById('glass-shell').classList.remove('shake'), 420);
-        btn.disabled = false;
-        btnText.innerHTML = '<svg class="ic" style="margin-right:8px"><use href="#i-login"/></svg>Masuk ke ERSUS';
-        document.getElementById('password').value = '';
-        document.getElementById('password').focus();
-      }
-    }, 850);
-  }
+      const m = localAuth(email, pw);
+      if (m) enterPlatform({ name: m.name, role: m.role, roleKey: m.roleKey, email: m.email, source: 'local' });
+      else loginError(email ? 'Email atau password salah. Coba lagi.' : 'Silakan pilih role atau isi kredensial.');
+    }, 650);
+  };
+
+  // Expose helpers untuk modul Firebase
+  window.__ersusAuth = { ACCOUNTS, localAuth, enterPlatform, loginError, loginBusy };
 
   // Floating particles
   (function () {
@@ -422,19 +435,82 @@
     for (let i = 0; i < 16; i++) {
       const p = document.createElement('div');
       p.className = 'particle';
-      const left = (i * 6.3 + (i % 3) * 4) % 100;
-      const dur = 12 + (i % 7) * 2.5;
-      p.style.left = left + '%';
+      p.style.left = ((i * 6.3 + (i % 3) * 4) % 100) + '%';
       p.style.bottom = '-10px';
-      p.style.animationDuration = dur + 's';
+      p.style.animationDuration = (12 + (i % 7) * 2.5) + 's';
       p.style.animationDelay = -(i * 1.3) + 's';
       p.style.opacity = 0.25 + (i % 4) * 0.08;
       wrap.appendChild(p);
     }
   })();
 
-  // Preselect Super Admin for quick demo
   selectRole('superadmin');
+</script>
+
+<!-- ═══ FIREBASE AUTH (enhance; fallback ke demo bila SDK/jaringan terblokir) ═══ -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+  import { firebaseConfig } from "./firebase/firebase-config.js";
+
+  const A = window.__ersusAuth;
+  let auth = null, db = null, fbReady = false;
+  try {
+    const app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+    fbReady = true;
+    console.log('[ERSUS] Firebase aktif · project:', firebaseConfig.projectId);
+  } catch (err) {
+    console.warn('[ERSUS] Firebase init gagal → mode demo lokal.', err);
+  }
+
+  // Override handler login dengan versi Firebase-aware
+  window.doLogin = async function (e) {
+    e.preventDefault();
+    const email = document.getElementById('email').value.trim().toLowerCase();
+    const pw = document.getElementById('password').value;
+    A.loginBusy(true);
+
+    // Firebase tidak tersedia → mode demo lokal
+    if (!fbReady) {
+      const m = A.localAuth(email, pw);
+      return m ? A.enterPlatform({ name: m.name, role: m.role, roleKey: m.roleKey, email: m.email, source: 'local' })
+               : A.loginError('Email atau password salah. Coba lagi.');
+    }
+
+    try {
+      const cred = await signInWithEmailAndPassword(auth, email, pw);
+      const uid = cred.user.uid;
+      // Ambil role dari Firestore users/{uid}
+      let profile = null;
+      try {
+        const snap = await getDoc(doc(db, 'users', uid));
+        if (snap.exists()) {
+          const d = snap.data();
+          profile = { name: d.name, role: d.role, roleKey: d.roleKey, email: d.email || email, uid, source: 'firebase' };
+        }
+      } catch (_) { /* rules/doc belum ada → fallback bawah */ }
+      if (!profile) {
+        const local = Object.values(A.ACCOUNTS).find(a => a.email.toLowerCase() === email);
+        profile = local
+          ? { name: local.name, role: local.role, roleKey: local.roleKey, email: local.email, uid, source: 'firebase' }
+          : { name: email.split('@')[0], role: 'Operator / Viewer', roleKey: 'operator', email, uid, source: 'firebase' };
+      }
+      A.enterPlatform(profile);
+    } catch (err) {
+      const code = (err && err.code) || '';
+      // Akun belum di-seed / Firebase diblokir jaringan → coba akun demo lokal
+      const soft = ['auth/user-not-found','auth/invalid-credential','auth/invalid-login-credentials','auth/wrong-password','auth/network-request-failed','auth/operation-not-allowed','auth/configuration-not-found','auth/api-key-not-valid'];
+      if (soft.includes(code) || code === '') {
+        const m = A.localAuth(email, pw);
+        if (m) return A.enterPlatform({ name: m.name, role: m.role, roleKey: m.roleKey, email: m.email, source: 'local-fallback' });
+      }
+      if (code === 'auth/invalid-email') return A.loginError('Format email tidak valid.');
+      A.loginError('Email atau password salah, atau akun belum di-seed di Firebase.');
+    }
+  };
 </script>
 </body>
 </html>
