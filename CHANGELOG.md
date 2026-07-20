@@ -16,6 +16,15 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/) & [Semantic Ver
 
 ---
 
+## [0.7.1] — 2026-07-20
+### Added
+- **Favicon ERSUS** (ikon bolt) di tab browser semua halaman (`index.html`, `login.html`,
+  `ersus-demo.html`, `firebase/seed.html`) — SVG inline (data URI), rounded-square
+  gradient electric-blue→cyan + petir putih. Self-contained, tanpa file/CDN eksternal.
+- `favicon.svg` — file sumber ikon disimpan di root repo.
+
+---
+
 ## [0.7.0] — 2026-07-20
 ### Added
 - **Platform baca data LIVE dari Firestore** (`index.html`):
