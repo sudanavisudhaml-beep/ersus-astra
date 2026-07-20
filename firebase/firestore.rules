@@ -1,0 +1,76 @@
+rules_version = '2';
+
+// ERSUS — Firestore Security Rules
+// Role-based access untuk 4 role: superadmin | admin | energy | operator
+// Role diambil dari custom claim `role` di Firebase Auth token (di-set via Admin SDK),
+// dengan fallback ke dokumen users/{uid}.role.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helpers ──────────────────────────────────────────────
+    function signedIn() {
+      return request.auth != null;
+    }
+    function roleClaim() {
+      return request.auth.token.role;
+    }
+    function roleDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+    function role() {
+      return signedIn() ? (roleClaim() != null ? roleClaim() : roleDoc()) : null;
+    }
+    function isSuperAdmin() { return role() == 'superadmin'; }
+    function isAdmin()      { return role() == 'admin' || isSuperAdmin(); }
+    function isEnergy()     { return role() == 'energy' || isAdmin(); }
+    function canRead()      { return signedIn(); } // semua role login boleh baca data operasional
+
+    // ── users: hanya Super Admin yang kelola user ───────────
+    match /users/{uid} {
+      allow read:  if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow write: if isSuperAdmin();
+    }
+
+    // ── sites & assets: baca semua role, tulis Admin+ ───────
+    match /sites/{siteId} {
+      allow read:  if canRead();
+      allow write: if isAdmin();
+    }
+    match /assets/{assetId} {
+      allow read:  if canRead();
+      allow write: if isAdmin();
+    }
+
+    // ── telemetry: baca semua role; tulis via service (Admin+) ─
+    match /telemetry/{docId} {
+      allow read:  if canRead();
+      allow write: if isAdmin();
+    }
+
+    // ── anomalies: baca semua; Energy Manager+ boleh update status ─
+    match /anomalies/{anomalyId} {
+      allow read:   if canRead();
+      allow create: if isAdmin();
+      allow update: if isEnergy();  // ack/resolve anomali
+      allow delete: if isSuperAdmin();
+    }
+
+    // ── reports & analyses: Energy Manager+ tulis ───────────
+    match /reports/{reportId} {
+      allow read:  if canRead();
+      allow write: if isEnergy();
+    }
+
+    // ── changelog (version log di DB): baca semua, tulis Admin+ ─
+    match /changelog/{version} {
+      allow read:  if canRead();
+      allow write: if isAdmin();
+    }
+
+    // ── default deny ────────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
