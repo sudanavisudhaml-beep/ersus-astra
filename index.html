@@ -206,7 +206,7 @@
 
     <div class="sb-status">
       <div class="live-dot"></div>
-      <div><div class="s1">LIVE · BEMS AMDI</div><div class="s2">Sinkron: real-time</div></div>
+      <div><div class="s1" id="sb-s1">LIVE · BEMS AMDI</div><div class="s2" id="sb-s2">Sinkron: real-time</div></div>
     </div>
 
     <nav class="sb-nav">
@@ -465,13 +465,15 @@
   var EXPORTS = ['Monthly Energy Report (PDF)', 'Management Review Pack (PPTX)', 'Raw Data Export (CSV/Excel)', 'Corrective Action Register', 'ESG Disclosure Draft'];
   var RATE = 1450;
 
-  // ─── Renderers ───
-  function seuRows(target, big) {
-    document.getElementById(target).innerHTML = SEU.map(function(s){
+  // ─── Renderers (data-driven; dipanggil dgn data lokal, lalu di-refresh dari Firestore) ───
+  function renderSEU(list) {
+    var html = list.map(function(s){
       return '<div class="seu-row"><span class="seu-name">'+s[0]+'</span><span class="seu-bar"><span class="bar" style="margin-top:0;"><span style="width:'+s[1]+'%;background:linear-gradient(90deg,'+s[2]+','+s[3]+');display:block;height:100%;border-radius:3px;"></span></span></span><span class="seu-val" style="color:'+s[3]+';">'+s[1]+'%</span></div>';
     }).join('');
+    document.getElementById('seu-mini').innerHTML = html;
+    document.getElementById('seu-full').innerHTML = html;
   }
-  seuRows('seu-mini'); seuRows('seu-full');
+  renderSEU(SEU);
 
   // trend bars overview
   (function(){
@@ -492,27 +494,51 @@
   })();
 
   // assets
-  document.getElementById('asset-grid').innerHTML = ASSETS.map(function(a){
-    var brd = a.st==='crit'?'rgba(255,90,106,0.45)':a.st==='warn'?'rgba(255,182,61,0.3)':'rgba(52,229,163,0.28)';
-    var chip = a.st==='crit'?'s-crit':a.st==='warn'?'s-warn':'s-ok';
-    var blink = a.st==='crit'?' blink':'';
-    return '<div class="card" style="border-color:'+brd+';padding:18px;">'+
-      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;"><div><div style="font-size:17px;font-weight:800;">'+a.name+'</div><div style="font-size:11px;color:var(--grey-dim);">'+a.loc+'</div></div><span class="chip-s '+chip+blink+'">'+a.stt+'</span></div>'+
-      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;">'+
-        '<div style="text-align:center;background:rgba(255,255,255,0.03);border-radius:9px;padding:9px;"><div style="font-size:9px;color:var(--grey-dim);">VOLT</div><div class="mono" style="font-size:15px;font-weight:700;color:#60a5fa;">'+a.v+'</div></div>'+
-        '<div style="text-align:center;background:rgba(255,255,255,0.03);border-radius:9px;padding:9px;"><div style="font-size:9px;color:var(--grey-dim);">POWER</div><div class="mono" style="font-size:15px;font-weight:700;color:'+(a.st==='crit'?'#ff8b96':'var(--ok)')+';">'+a.p+'</div></div>'+
-        '<div style="text-align:center;background:rgba(255,255,255,0.03);border-radius:9px;padding:9px;"><div style="font-size:9px;color:var(--grey-dim);">ENERGY</div><div class="mono" style="font-size:15px;font-weight:700;">'+a.kwh+'</div></div>'+
-      '</div>'+
-      '<div style="font-size:11.5px;color:var(--grey);line-height:1.5;padding:10px;background:rgba(10,132,255,0.05);border:1px solid rgba(10,132,255,0.15);border-radius:10px;"><b style="color:var(--electric-2);">ERSUS:</b> '+a.note+'</div>'+
-    '</div>';
-  }).join('');
+  function renderAssets(list) {
+    document.getElementById('asset-grid').innerHTML = list.map(function(a){
+      var brd = a.st==='crit'?'rgba(255,90,106,0.45)':a.st==='warn'?'rgba(255,182,61,0.3)':'rgba(52,229,163,0.28)';
+      var chip = a.st==='crit'?'s-crit':a.st==='warn'?'s-warn':'s-ok';
+      var blink = a.st==='crit'?' blink':'';
+      return '<div class="card" style="border-color:'+brd+';padding:18px;">'+
+        '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;"><div><div style="font-size:17px;font-weight:800;">'+a.name+'</div><div style="font-size:11px;color:var(--grey-dim);">'+a.loc+'</div></div><span class="chip-s '+chip+blink+'">'+a.stt+'</span></div>'+
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;">'+
+          '<div style="text-align:center;background:rgba(255,255,255,0.03);border-radius:9px;padding:9px;"><div style="font-size:9px;color:var(--grey-dim);">VOLT</div><div class="mono" style="font-size:15px;font-weight:700;color:#60a5fa;">'+a.v+'</div></div>'+
+          '<div style="text-align:center;background:rgba(255,255,255,0.03);border-radius:9px;padding:9px;"><div style="font-size:9px;color:var(--grey-dim);">POWER</div><div class="mono" style="font-size:15px;font-weight:700;color:'+(a.st==='crit'?'#ff8b96':'var(--ok)')+';">'+a.p+'</div></div>'+
+          '<div style="text-align:center;background:rgba(255,255,255,0.03);border-radius:9px;padding:9px;"><div style="font-size:9px;color:var(--grey-dim);">ENERGY</div><div class="mono" style="font-size:15px;font-weight:700;">'+a.kwh+'</div></div>'+
+        '</div>'+
+        '<div style="font-size:11.5px;color:var(--grey);line-height:1.5;padding:10px;background:rgba(10,132,255,0.05);border:1px solid rgba(10,132,255,0.15);border-radius:10px;"><b style="color:var(--electric-2);">ERSUS:</b> '+(a.note||'—')+'</div>'+
+      '</div>';
+    }).join('');
+  }
+  renderAssets(ASSETS);
 
   // anomalies
-  document.getElementById('anom-body').innerHTML = ANOM.map(function(x){
-    return '<tr><td><div style="font-weight:600;color:#e2e8f0;">'+x[0]+'</div><div style="font-size:11px;color:var(--grey-dim);">'+x[1]+'</div></td>'+
-      '<td><span class="chip-s '+x[6]+'">'+x[3]+'</span></td><td class="mono" style="color:'+(x[2]==='crit'?'#ff8b96':x[2]==='warn'?'var(--warn)':'var(--ok)')+';">'+x[4]+'</td>'+
-      '<td class="mono" style="font-weight:700;color:'+(x[2]==='ok'?'var(--ok)':'#e2e8f0')+';">'+x[5]+'</td><td><span class="chip-s '+x[6]+'">'+x[7]+'</span></td></tr>';
-  }).join('');
+  function renderAnomalies(list) {
+    document.getElementById('anom-body').innerHTML = list.map(function(x){
+      return '<tr><td><div style="font-weight:600;color:#e2e8f0;">'+x[0]+'</div><div style="font-size:11px;color:var(--grey-dim);">'+x[1]+'</div></td>'+
+        '<td><span class="chip-s '+x[6]+'">'+x[3]+'</span></td><td class="mono" style="color:'+(x[2]==='crit'?'#ff8b96':x[2]==='warn'?'var(--warn)':'var(--ok)')+';">'+x[4]+'</td>'+
+        '<td class="mono" style="font-weight:700;color:'+(x[2]==='ok'?'var(--ok)':'#e2e8f0')+';">'+x[5]+'</td><td><span class="chip-s '+x[6]+'">'+x[7]+'</span></td></tr>';
+    }).join('');
+  }
+  renderAnomalies(ANOM);
+
+  // Update badge jumlah anomali kritis (sidebar + topbar)
+  function updateAnomalyCount(n) {
+    var badge = document.querySelector('[data-mod="anomaly"] .ni-badge');
+    if (badge) { badge.textContent = n; badge.style.display = n>0?'':'none'; }
+    var alert = document.querySelector('.tb-alert');
+    if (alert) alert.innerHTML = '<svg class="ic"><use href="#i-warn"/></svg> '+n+' Anomali Kritis';
+  }
+
+  // Indikator sumber data
+  function setDataSource(live) {
+    var s1 = document.getElementById('sb-s1'), s2 = document.getElementById('sb-s2');
+    if (s1) s1.textContent = live ? 'LIVE · Firestore' : 'LIVE · BEMS AMDI';
+    if (s2) s2.textContent = live ? 'Sumber: astra-ersus' : 'Sinkron: real-time';
+  }
+
+  // Ekspos untuk modul Firebase
+  window.__ersusRender = { seu: renderSEU, assets: renderAssets, anomalies: renderAnomalies, count: updateAnomalyCount, source: setDataSource, SEU_DEFAULT: SEU };
 
   // governance monthly
   var baseK = 138000;
@@ -539,6 +565,91 @@
 
   // re-apply operator read-only after dynamic render
   (function(){ var s = window.__ERSUS||{}; if (s.roleKey==='operator'){ document.querySelectorAll('.btn.primary,[data-write]').forEach(function(b){ b.disabled=true; }); } })();
+</script>
+
+<!-- ═══ FIREBASE LIVE DATA (hydrate dari Firestore; fallback ke data lokal) ═══ -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+  import { firebaseConfig } from "./firebase/firebase-config.js";
+
+  const R = window.__ersusRender;
+  if (!R) { /* renderer belum siap; abaikan */ }
+
+  // Warna SEU per-id (Firestore hanya simpan name+pct)
+  const SEU_COLORS = {
+    hvac:['#3b82f6','#00d4ff'], lighting:['#10b981','#34e5a3'], server:['#8b5cf6','#a78bfa'],
+    office:['#f59e0b','#ffb63d'], liftpump:['#ef4444','#ff8b96'], others:['#64748b','#94a3b8']
+  };
+  const SEV = { HIGH:['crit','KRITIS','s-crit'], MED:['warn','WARN','s-warn'], LOW:['ok','RENDAH','s-info'] };
+  const STAT = { open:'AKTIF', ack:'MONITOR', resolved:'RESOLVED' };
+  const rupiah = n => 'Rp ' + Number(n||0).toLocaleString('id-ID');
+
+  function mapAsset(d) {
+    return { name:d.name, loc:d.loc||'', st:d.status||'ok', stt:d.statusLabel||'—',
+             v:d.dispV||'—', p:d.dispP||'—', kwh:d.dispKwh||'—', note:d.note||'' };
+  }
+  function mapAnom(d) {
+    const sev = SEV[d.sev] || SEV.MED;
+    return [ d.title||'-', d.desc||'', sev[0], sev[1],
+             '± ' + Number(d.wasteKwh||0).toLocaleString('id-ID') + ' kWh',
+             rupiah(d.wasteIdr), sev[2], STAT[d.status] || (d.status||'-').toUpperCase() ];
+  }
+  function mapSeu(d) {
+    const c = SEU_COLORS[d.id] || ['#64748b','#94a3b8'];
+    return [ d.name, d.pct, c[0], c[1], (d.order!=null?d.order:99) ];
+  }
+
+  try {
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { console.log('[ERSUS] Tidak login via Firebase → pakai data lokal.'); return; }
+      try {
+        const [aSnap, anSnap, sSnap] = await Promise.all([
+          getDocs(collection(db, 'assets')),
+          getDocs(collection(db, 'anomalies')),
+          getDocs(collection(db, 'seu'))
+        ]);
+
+        // Assets
+        if (!aSnap.empty) {
+          const order = ['AHU-3A','AHU-3B','AHU-4A','AHU-4B','CH-01','CH-02'];
+          const assets = aSnap.docs.map(x => ({ id:x.id, ...x.data() }))
+            .sort((p,q)=> (order.indexOf(p.id)+1||99) - (order.indexOf(q.id)+1||99))
+            .map(mapAsset);
+          if (assets.length) R.assets(assets);
+        }
+
+        // Anomalies
+        if (!anSnap.empty) {
+          const rank = { HIGH:0, MED:1, LOW:2 };
+          const docs = anSnap.docs.map(x => x.data())
+            .sort((p,q)=> (rank[p.sev]??3) - (rank[q.sev]??3));
+          R.anomalies(docs.map(mapAnom));
+          const kritis = docs.filter(d => d.sev==='HIGH' && d.status!=='resolved').length;
+          R.count(kritis);
+        }
+
+        // SEU
+        if (!sSnap.empty) {
+          const seu = sSnap.docs.map(x => ({ id:x.id, ...x.data() })).map(mapSeu)
+            .sort((p,q)=> p[4]-q[4]);
+          if (seu.length) R.seu(seu);
+        }
+
+        R.source(true);
+        console.log('[ERSUS] Data live Firestore dimuat:', aSnap.size, 'assets ·', anSnap.size, 'anomali ·', sSnap.size, 'seu');
+      } catch (err) {
+        console.warn('[ERSUS] Gagal baca Firestore (pakai data lokal):', err && err.code || err);
+      }
+    });
+  } catch (err) {
+    console.warn('[ERSUS] Firebase tidak tersedia → data lokal.', err);
+  }
 </script>
 </body>
 </html>
