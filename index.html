@@ -101,8 +101,22 @@
 </head>
 <body>
 
-<!-- ══ LOGIN OVERLAY ══════════════════════════════════════════ -->
-<div id="ersus-login">
+<!-- ══ AUTH GATE — login.html is the single front door ══════════ -->
+<script>
+  (function () {
+    var s = null;
+    try { s = JSON.parse(localStorage.getItem('ersus_session') || 'null'); } catch (e) { s = null; }
+    if (!s || !s.auth) {
+      // not logged in → send to login page
+      window.location.replace('login.html');
+    } else {
+      window.__ERSUS_SESSION = s;
+    }
+  })();
+</script>
+
+<!-- ══ LOGIN OVERLAY (legacy — disabled; login handled by login.html) ══ -->
+<div id="ersus-login" style="display:none">
   <div class="el-bg-txt" style="top:6%;left:3%;">ERSUS</div>
   <div class="el-bg-txt" style="bottom:8%;right:3%;font-size:120px;text-align:right;">ESG<br>AI</div>
 
@@ -176,86 +190,41 @@
 
 <!-- ══ USER CHIP (appears after login) ══════════════════════ -->
 <div id="ersus-user-chip">
-  <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#0056B3,#8B5CF6);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:white;flex-shrink:0;">A</div>
+  <div id="el-chip-avatar" style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#0056B3,#8B5CF6);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:white;flex-shrink:0;">A</div>
   <div>
     <div id="el-chip-name" style="font-size:12px;font-weight:700;color:#e2e8f0;">Administrator</div>
-    <div style="font-size:10px;color:#8B5CF6;font-weight:600;">Administrator · AMDI</div>
+    <div id="el-chip-role" style="font-size:10px;color:#8B5CF6;font-weight:600;">Administrator · AMDI</div>
   </div>
   <button onclick="ersusLogout()" style="margin-left:4px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);border-radius:7px;padding:5px 8px;color:#F87171;cursor:pointer;font-size:13px;" title="Keluar">
     <i class="ph ph-sign-out"></i>
   </button>
 </div>
 
-<!-- ══ LOGIN JAVASCRIPT ══════════════════════════════════════ -->
+<!-- ══ SESSION JAVASCRIPT ══════════════════════════════════════ -->
 <script>
-  var ERSUS_USERS = [
-    { email: 'admin@ersus.astra.co.id', password: 'Ersus@2026', name: 'Administrator', role: 'Administrator' }
-  ];
+  // Populate the user chip from the login.html session, then reveal it.
+  (function () {
+    function initChip() {
+      var s = window.__ERSUS_SESSION;
+      if (!s) { try { s = JSON.parse(localStorage.getItem('ersus_session') || 'null'); } catch (e) { s = null; } }
+      if (!s || !s.auth) return; // gate already redirected
+      var nameEl = document.getElementById('el-chip-name');
+      var roleEl = document.getElementById('el-chip-role');
+      var avEl = document.getElementById('el-chip-avatar');
+      if (nameEl) nameEl.textContent = s.name || 'Pengguna';
+      if (roleEl) roleEl.textContent = (s.role || 'User') + ' · AMDI';
+      if (avEl) avEl.textContent = (s.name || 'U').charAt(0).toUpperCase();
+      var chip = document.getElementById('ersus-user-chip');
+      if (chip) chip.classList.add('show');
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initChip);
+    else initChip();
+  })();
 
-  function ersusLogin(e) {
-    e.preventDefault();
-    var email = document.getElementById('el-email').value.trim();
-    var pw = document.getElementById('el-pw').value;
-    var btn = document.getElementById('el-btn');
-    var btnTxt = document.getElementById('el-btn-text');
-    var err = document.getElementById('el-error');
-
-    btn.disabled = true;
-    btnTxt.innerHTML = '<i class="ph ph-circle-notch el-spin" style="margin-right:8px;"></i>Memverifikasi...';
-
-    setTimeout(function() {
-      var user = ERSUS_USERS.find(function(u){ return u.email === email && u.password === pw; });
-      if (user) {
-        err.style.display = 'none';
-        btnTxt.innerHTML = '<i class="ph ph-check-circle" style="margin-right:8px;"></i>Berhasil!';
-        btn.style.background = 'linear-gradient(135deg,#10B981,#34D399)';
-        document.getElementById('el-chip-name').textContent = user.name;
-        setTimeout(function() {
-          document.getElementById('ersus-login-card').classList.add('el-exit');
-          setTimeout(function() {
-            document.getElementById('ersus-login').classList.add('hidden');
-            var chip = document.getElementById('ersus-user-chip');
-            chip.classList.add('show');
-          }, 450);
-        }, 600);
-      } else {
-        err.style.display = 'flex';
-        document.getElementById('el-error-msg').textContent = 'Email atau password salah. Coba lagi.';
-        document.getElementById('ersus-login-card').classList.add('el-shake');
-        setTimeout(function(){ document.getElementById('ersus-login-card').classList.remove('el-shake'); }, 400);
-        btn.disabled = false;
-        btnTxt.innerHTML = '<i class="ph ph-sign-in" style="margin-right:8px;"></i>Masuk ke ERSUS';
-        btn.style.background = '';
-        document.getElementById('el-pw').value = '';
-        document.getElementById('el-pw').focus();
-      }
-    }, 900);
-  }
-
+  // Logout → clear session and return to the login page.
   function ersusLogout() {
-    document.getElementById('ersus-user-chip').classList.remove('show');
-    var card = document.getElementById('ersus-login-card');
-    card.classList.remove('el-exit');
-    document.getElementById('ersus-login').classList.remove('hidden');
-    document.getElementById('el-email').value = '';
-    document.getElementById('el-pw').value = '';
-    document.getElementById('el-btn').disabled = false;
-    document.getElementById('el-btn-text').innerHTML = '<i class="ph ph-sign-in" style="margin-right:8px;"></i>Masuk ke ERSUS';
-    document.getElementById('el-btn').style.background = '';
-    document.getElementById('el-error').style.display = 'none';
-  }
-
-  function ersusDemo() {
-    document.getElementById('el-email').value = 'admin@ersus.astra.co.id';
-    document.getElementById('el-pw').value = 'Ersus@2026';
-    document.getElementById('el-pw').focus();
-  }
-
-  function ersusTogglePw() {
-    var pw = document.getElementById('el-pw');
-    var icon = document.getElementById('el-pw-eye');
-    if (pw.type === 'password') { pw.type = 'text'; icon.className = 'ph ph-eye-slash'; }
-    else { pw.type = 'password'; icon.className = 'ph ph-eye'; }
+    try { localStorage.removeItem('ersus_session'); } catch (e) {}
+    window.location.href = 'login.html';
   }
 </script>
 
