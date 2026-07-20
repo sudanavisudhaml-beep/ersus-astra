@@ -42,6 +42,12 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // ── seu: distribusi Significant Energy Use — baca semua, tulis Admin+ ─
+    match /seu/{seuId} {
+      allow read:  if canRead();
+      allow write: if isAdmin();
+    }
+
     // ── telemetry: baca semua role; tulis via service (Admin+) ─
     match /telemetry/{docId} {
       allow read:  if canRead();
