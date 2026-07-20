@@ -9,9 +9,26 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/) & [Semantic Ver
 
 ## [Unreleased]
 ### Rencana
-- Integrasi Firebase (Auth + Firestore) — lihat `docs/FIREBASE_SETUP.md`
-- Pendalaman tiap modul (data live dari Firestore, kontrol device)
+- Platform baca data live dari Firestore (assets, anomalies, seu, sites)
+- Custom claim `role` via Admin SDK (saat ini role disimpan di `users/{uid}`)
 - Menu/akses berbeda per role (gating penuh, bukan hanya read-only)
+- Kontrol device (write-back) via ERSUS
+
+---
+
+## [0.6.0] — 2026-07-20
+### Added
+- **Integrasi Firebase** (project `astra-ersus`):
+  - `firebase/firebase-config.js` — config web project (client-safe).
+  - `login.html` kini autentikasi via **Firebase Auth** (email/password), ambil role
+    dari Firestore `users/{uid}`. **Fallback otomatis ke akun demo** bila SDK/jaringan
+    terblokir atau akun belum di-seed → login tetap jalan.
+  - `firebase/seed.html` — halaman sekali-jalan: buat 4 akun role di Auth + tulis
+    dokumen role, lalu seed data awal AMDI (`sites`, `assets`, `anomalies`, `seu`, `changelog`).
+### Notes
+- Firebase Web SDK dimuat dari gstatic CDN. Bila jaringan Astra memblokir domain Google,
+  login otomatis memakai mode demo lokal (tidak error). Aktivasi Firebase penuh butuh
+  whitelist domain Firebase di jaringan Astra.
 
 ---
 

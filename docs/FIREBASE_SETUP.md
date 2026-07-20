@@ -110,12 +110,23 @@ for (const u of seed) {
 
 ---
 
-## 6. Status integrasi
+## 6. Cara menjalankan (project astra-ersus)
+
+1. Di [Firebase Console](https://console.firebase.google.com/project/astra-ersus):
+   - **Authentication → Sign-in method → Email/Password → Enable**
+   - **Firestore Database → Create database** (region `asia-southeast2`)
+2. Buka **`firebase/seed.html`** di browser (via URL live atau lokal), klik **▶ Jalankan Seed**.
+   → membuat 4 akun role + menulis dokumen role + seed data AMDI.
+3. Deploy rules: Console → Firestore → **Rules** → tempel isi `firebase/firestore.rules` → Publish.
+4. Tes login di `login.html` — sekarang autentik via Firebase (role dari Firestore).
+
+## 7. Status integrasi
 
 - [x] Data model & role matrix dirancang
 - [x] Security rules ditulis (`firebase/firestore.rules`)
-- [x] Config template disiapkan (`firebase/firebase-config.template.js`)
-- [ ] `firebaseConfig` diisi (menunggu project Firebase Anda)
-- [ ] `login.html` diwiring ke Firebase Auth (fallback demo tetap ada)
-- [ ] Seed 4 akun role
-- [ ] Platform baca data dari Firestore
+- [x] `firebaseConfig` diisi (`firebase/firebase-config.js`, project astra-ersus)
+- [x] `login.html` diwiring ke Firebase Auth (fallback demo tetap ada)
+- [x] Seed page dibuat (`firebase/seed.html`) — buat 4 akun role + data awal
+- [ ] Jalankan `seed.html` (aksi Anda di browser, sekali)
+- [ ] Deploy `firestore.rules` (aksi Anda di Console)
+- [ ] Platform baca data live dari Firestore (langkah berikutnya)
