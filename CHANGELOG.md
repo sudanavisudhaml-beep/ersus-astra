@@ -9,10 +9,31 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/) & [Semantic Ver
 
 ## [Unreleased]
 ### Rencana
+- **Okupansi bulanan dari jadwal booking ruangan** (input user) → denominator EnPI air nyata
+- **People counting system Gedung AMDI** (sensor lobby/lantai) → okupansi real-time,
+  regresi orang↔energi presisi, dynamic baseline
 - Custom claim `role` via Admin SDK (saat ini role disimpan di `users/{uid}`)
 - Menu/akses berbeda per role (gating penuh, bukan hanya read-only)
 - Kontrol device (write-back) via ERSUS
 - Realtime listener (onSnapshot) agar dashboard update tanpa reload
+
+---
+
+## [0.8.0] — 2026-07-21
+### Changed
+- **Modul "EnPI & Baseline" dibangun ulang dengan data REAL AMDI 2020–2026**
+  (dari `data_EnP.xlsx` → `docs/data/amdi-enpi.json`), menggantikan data simulasi:
+  - 4 KPI: EnPI Listrik 2026 YTD (9,61 kWh/m²/bln vs target 15), EnPI Air 2026 YTD
+    (63,3 L/org/hari vs target 53 — merah), Baseload akhir pekan (±4.400 kWh/hari),
+    Energi marginal (±3,2 kWh/orang/hari kerja).
+  - 2 grafik garis multi-tahun (SVG vanilla, self-contained): kWh/m²/bulan dan
+    liter/orang/hari, 7 tahun overlay + garis target putus-putus.
+  - Tabel Profil Energi Tahunan dengan status per indikator (OK / DI AMBANG / LEWATI TARGET).
+  - Panel regresi okupansi↔energi: scatter harian 2026 (197 titik, hari kerja vs akhir
+    pekan vs libur), garis baseload & rata-rata hari kerja, formula + R², dan roadmap
+    okupansi (booking ruangan → people counting system).
+  - 3 kartu insight: break struktural Agu-2025 (−18%), air naik berlawanan arah (+24%),
+    temuan kualitas data denominator.
 
 ---
 
