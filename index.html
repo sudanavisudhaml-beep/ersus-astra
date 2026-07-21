@@ -311,30 +311,63 @@
         </div>
       </section>
 
-      <!-- ═══ EnPI ═══ -->
+      <!-- ═══ EnPI — Data real AMDI 2020–2026 (data_EnP.xlsx) ═══ -->
       <section class="module" id="mod-enpi">
         <div class="grid g4" style="margin-bottom:14px;">
-          <div class="kpi blue"><div class="k-label">EnPI Bulan Ini</div><div class="k-val mono" style="color:#60a5fa;">13.1</div><div class="k-unit">kWh/m²/bulan</div></div>
-          <div class="kpi purple"><div class="k-label">Baseline 2024</div><div class="k-val mono" style="color:var(--purple);">13.8</div><div class="k-unit">referensi</div></div>
-          <div class="kpi green"><div class="k-label">Target 2026</div><div class="k-val mono" style="color:var(--ok);">12.5</div><div class="k-unit">−9,4% baseline</div></div>
-          <div class="kpi gold"><div class="k-label">Gap ke Target</div><div class="k-val mono" style="color:var(--warn);">+0.6</div><div class="k-unit">perlu upaya lanjut</div></div>
+          <div class="kpi green"><div class="k-label"><svg class="ic"><use href="#i-bolt"/></svg>EnPI Listrik · 2026 YTD</div><div class="k-val mono" style="color:var(--ok);">9.61</div><div class="k-unit">kWh/m²/bulan · target 15</div><div class="k-foot" style="color:var(--ok);">▼ 21% vs 2024 (12,15) — jauh di bawah target</div></div>
+          <div class="kpi red"><div class="k-label"><svg class="ic"><use href="#i-gauge"/></svg>EnPI Air · 2026 YTD</div><div class="k-val mono" style="color:#ff8b96;">63.3</div><div class="k-unit">liter/orang/hari · target 53</div><div class="k-foot" style="color:#ff8b96;">▲ 19% DI ATAS target — tren naik sejak 2022</div></div>
+          <div class="kpi gold"><div class="k-label"><svg class="ic"><use href="#i-clock"/></svg>Baseload Akhir Pekan</div><div class="k-val mono" style="color:var(--warn);">4.400</div><div class="k-unit">kWh/hari saat gedung kosong</div><div class="k-foot" style="color:var(--warn);">36% dari beban hari kerja — target hemat utama</div></div>
+          <div class="kpi purple"><div class="k-label"><svg class="ic"><use href="#i-trend"/></svg>Energi Marginal</div><div class="k-val mono" style="color:var(--purple);">3.2</div><div class="k-unit">kWh/orang/hari kerja</div><div class="k-foot" style="color:var(--grey-dim);">Dari regresi harian 2026 (R² 0,83)</div></div>
         </div>
-        <div class="grid g-2-1">
+
+        <div class="grid g2" style="margin-bottom:14px;">
           <div class="card">
-            <div class="card-h"><svg class="ic ch-ic"><use href="#i-gauge"/></svg>Tren EnPI vs Baseline</div>
-            <div class="card-sub">7 bulan terakhir · kWh/m²</div>
-            <div class="bars" id="enpi-bars"></div>
+            <div class="card-h"><svg class="ic ch-ic"><use href="#i-bolt"/></svg>EnPI Listrik — kWh/m²/bulan · 2020–2026</div>
+            <div class="card-sub">Denominator: luas ber-AC 27.179,67 m² · garis putus = target 15 · Jun-26 parsial (tidak diplot)</div>
+            <div id="enpi-chart-listrik"></div>
           </div>
           <div class="card">
-            <div class="card-h"><svg class="ic ch-ic"><use href="#i-gear"/></svg>Dynamic Baseline Engine</div>
-            <div class="card-sub">Baseline menyesuaikan kondisi operasional</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px;">
-              <div style="padding:11px;border-radius:11px;background:rgba(255,255,255,0.03);border:1px solid var(--glass-brd-soft);"><div style="font-size:10px;color:var(--grey-dim);">OKUPANSI</div><div style="font-size:18px;font-weight:800;color:#60a5fa;" class="mono">50%</div></div>
-              <div style="padding:11px;border-radius:11px;background:rgba(255,255,255,0.03);border:1px solid var(--glass-brd-soft);"><div style="font-size:10px;color:var(--grey-dim);">CUACA (BMKG)</div><div style="font-size:18px;font-weight:800;color:var(--warn);">34°C</div></div>
-              <div style="padding:11px;border-radius:11px;background:rgba(255,255,255,0.03);border:1px solid var(--glass-brd-soft);"><div style="font-size:10px;color:var(--grey-dim);">JADWAL</div><div style="font-size:14px;font-weight:700;color:var(--purple);">Hari Kerja</div></div>
-              <div style="padding:11px;border-radius:11px;background:rgba(255,255,255,0.03);border:1px solid var(--glass-brd-soft);"><div style="font-size:10px;color:var(--grey-dim);">AKTIVITAS</div><div style="font-size:14px;font-weight:700;color:var(--ok);">Normal Ops</div></div>
+            <div class="card-h"><svg class="ic ch-ic"><use href="#i-gauge"/></svg>EnPI Air — liter/orang/hari · 2020–2026</div>
+            <div class="card-sub">Garis putus = target 53 · Mei–Jun 26 dihitung dari m³ (denominator 50.000 person-days)</div>
+            <div id="enpi-chart-air"></div>
+          </div>
+        </div>
+
+        <div class="grid g-2-1" style="margin-bottom:14px;">
+          <div class="card">
+            <div class="card-h"><svg class="ic ch-ic"><use href="#i-scales"/></svg>Profil Energi Tahunan — Gedung AMDI</div>
+            <div class="card-sub">Rata-rata bulanan per tahun · sumber: data_EnP.xlsx</div>
+            <table>
+              <thead><tr><th>Tahun</th><th>Listrik (kWh/bln)</th><th>kWh/m²</th><th>Air (m³/bln)</th><th>L/org/hari</th><th>Status EnPI</th></tr></thead>
+              <tbody id="enpi-year-body"></tbody>
+            </table>
+          </div>
+          <div class="card">
+            <div class="card-h"><svg class="ic ch-ic"><use href="#i-trend"/></svg>Regresi: Okupansi ↔ Energi</div>
+            <div class="card-sub">Data harian 2026 (n=197, 1 Jan–16 Jul) · proxy okupansi: hari kerja</div>
+            <div id="enpi-scatter"></div>
+            <div style="margin-top:10px;padding:11px;border-radius:11px;background:rgba(167,139,250,0.08);border:1px solid rgba(167,139,250,0.25);font-size:12px;color:#d6c9ff;line-height:1.6;">
+              <b class="mono" style="color:var(--purple);">kWh/hari = 4.403 + 7.847 × hari_kerja</b> · R² = 0,83<br>
+              Delta okupansi ±7.850 kWh ÷ 2.448 penghuni ≈ <b>3,2 kWh/orang/hari</b>
             </div>
-            <div style="margin-top:12px;padding:11px;border-radius:11px;background:rgba(255,182,61,0.08);border:1px solid rgba(255,182,61,0.2);font-size:12px;color:#fde8b0;">Baseline terhitung hari ini: target <b class="mono">7.200 kWh</b> — aktual 4.821 kWh (<span style="color:var(--ok);">on track</span>)</div>
+            <div style="margin-top:8px;padding:10px;border-radius:10px;background:rgba(10,132,255,0.06);border:1px solid rgba(10,132,255,0.18);font-size:11.5px;color:#9fc4ff;line-height:1.55;">
+              <b>Roadmap okupansi:</b> ① manual (booking ruangan, bulanan) → ② <b>people counting system</b> AMDI (sensor lobby/lantai) → okupansi real-time menggantikan proxy hari-kerja, regresi per-orang jadi presisi.
+            </div>
+          </div>
+        </div>
+
+        <div class="grid g3">
+          <div class="card" style="border-color:rgba(0,212,255,0.3);">
+            <div class="card-h" style="color:var(--electric-2);"><svg class="ic ch-ic"><use href="#i-arrow-down"/></svg>Break Struktural Agu-2025</div>
+            <div style="font-size:12.5px;color:var(--grey);line-height:1.65;">Konsumsi listrik turun dari ±350rb → ±250–290rb kWh/bln (<b style="color:var(--electric-2);">−18% YoY</b>). kWh/m² turun 12→9,2. Penyebab belum terdokumentasi — perlu dicatat untuk audit baseline (retrofit? kebijakan AC? okupansi?).</div>
+          </div>
+          <div class="card" style="border-color:rgba(255,90,106,0.35);">
+            <div class="card-h" style="color:#ff8b96;"><svg class="ic ch-ic"><use href="#i-warn"/></svg>Air Naik Berlawanan Arah</div>
+            <div style="font-size:12.5px;color:var(--grey);line-height:1.65;">Pemakaian air <b style="color:#ff8b96;">+24%</b> (2026 vs 2024) dan biaya <b style="color:#ff8b96;">+75%</b> sejak 2020 (run-rate Rp 478 jt/thn). Sudah 19% di atas target — cek kebocoran, okupansi tak tercatat, atau intensitas acara.</div>
+          </div>
+          <div class="card" style="border-color:rgba(255,182,61,0.3);">
+            <div class="card-h" style="color:var(--warn);"><svg class="ic ch-ic"><use href="#i-alert"/></svg>Kualitas Data EnPI</div>
+            <div style="font-size:12.5px;color:var(--grey);line-height:1.65;">Denominator L/org/hari memakai <b style="color:var(--warn);">konstanta</b> (±2.273 org × 22 hari), bukan okupansi aktual — padahal manpower 2026 = 2.500. Kolom peserta harian kosong. Des-25 punya 2 versi angka. → diperbaiki lewat roadmap counting.</div>
           </div>
         </div>
       </section>
@@ -485,14 +518,7 @@
       return '<div class="b" style="height:'+Math.round(v/max*100)+'%;'+(anom?'background:linear-gradient(180deg,#ff8b96,#ff5a6a);':'')+(i===vals.length-1?'background:linear-gradient(180deg,#7fd0ff,#0a84ff);':'')+'"></div>';
     }).join('');
   })();
-  // enpi bars
-  (function(){
-    var vals = [13.8,13.6,13.5,13.3,13.2,13.1];
-    var max = 14;
-    document.getElementById('enpi-bars').innerHTML = vals.map(function(v,i){
-      return '<div class="b" style="height:'+Math.round(v/max*100)+'%;background:linear-gradient(180deg,#ffb63d,#f59e0b);"></div>';
-    }).join('');
-  })();
+  // EnPI module dirender oleh script ENPI (bawah) memakai data real AMDI.
 
   // assets
   function renderAssets(list) {
@@ -566,6 +592,97 @@
 
   // re-apply operator read-only after dynamic render
   (function(){ var s = window.__ERSUS||{}; if (s.roleKey==='operator'){ document.querySelectorAll('.btn.primary,[data-write]').forEach(function(b){ b.disabled=true; }); } })();
+</script>
+
+<!-- ═══ MODUL EnPI — data real AMDI 2020–2026 (docs/data/amdi-enpi.json) ═══ -->
+<script>
+(function(){
+  var D = {"kwhM2":{"2020":[14.86,13.77,13.52,9.86,7.93,11.93,12.89,12.95,12.43,12.63,13.39,11.95],"2021":[11.64,12.06,14.13,13.99,13.07,12.98,8.13,8.01,9.33,12.51,12.71,12.72],"2022":[12.07,11.01,10.86,11.59,10.83,11.67,11.96,11.9,12.04,11.89,11.87,11.91],"2023":[11.63,11.4,11.19,10.74,12.74,12.13,11.93,12.03,12.01,13.23,12.04,11.3],"2024":[11.88,11.78,11.84,10.97,12.29,11.99,11.77,12.03,12.32,13.64,13.09,12.77],"2025":[11.9,12.52,12.95,11.83,12.99,12.92,13.66,9.72,10.08,10.73,9.17,null],"2026":[9.21,9.2,8.79,10.58,10.28,null,null,null,null,null,null,null]},"loh":{"2020":[50.17,54.41,45.94,23.67,7.53,30.98,37.74,40.7,39.46,38.92,36.74,36.12],"2021":[30.88,32.28,29.76,31.66,27.86,29.26,15.54,10.8,22.98,32.12,40.94,48],"2022":[50.74,51.17,47.72,37.48,39.52,52.87,52.33,55.2,52.78,57.32,58.8,60.14],"2023":[51.15,42.48,37.11,35.84,49.33,58.28,58.37,47.57,55.17,61.74,47.3,49.4],"2024":[50.66,55.08,46.04,51.06,54.3,51.48,52.0,51.06,54.74,57.72,62.44,54.78],"2025":[55.66,55.56,56.28,55.62,59.44,60.88,62.3,61.07,59.97,64.6,65.07,60.6],"2026":[66.88,60.8,54.28,71.24,65.04,64.36,null,null,null,null,null,null]},"yearly":[[2020,335652,12.38,1959,36.87,1,"ok"],[2021,320145,11.69,1456,29.34,1,"ok"],[2022,316389,11.61,2438,51.34,1,"ok"],[2023,322619,11.91,2304,49.48,1,"ok"],[2024,331709,12.15,2672,53.45,1,"warn"],[2025,315368,11.68,2961,59.75,1,"crit"],[2026,261248,9.61,3188,63.3,1,"crit"]],"daily":[[0,5920,2],[1,10600,1],[2,4200,0],[3,4080,0],[4,12520,1],[5,11560,1],[6,11560,1],[7,10800,1],[8,11400,1],[9,4080,0],[10,4000,0],[11,10640,1],[12,10520,1],[13,10520,1],[14,10200,1],[15,3840,2],[16,3640,0],[17,3320,0],[18,10920,1],[19,10680,1],[20,10480,1],[21,10480,1],[22,10040,1],[23,3600,0],[24,3120,0],[25,11320,1],[26,11040,1],[27,11840,1],[28,11200,1],[29,10320,1],[30,4720,0],[31,4360,0],[32,12120,1],[33,10960,1],[34,12080,1],[35,11400,1],[36,11080,1],[37,4360,0],[38,4040,0],[39,12320,1],[40,11240,1],[41,11280,1],[42,12320,1],[43,10640,1],[44,3480,0],[45,3560,0],[46,5400,1],[47,4600,2],[48,12200,1],[49,6440,1],[50,15000,1],[51,4480,0],[52,4200,0],[53,10840,1],[54,10840,1],[55,12440,1],[56,12000,1],[57,10840,1],[58,5520,0],[59,4920,0],[60,11800,1],[61,11800,1],[62,12120,1],[63,11440,1],[64,11160,1],[65,4040,0],[66,4120,0],[67,11640,1],[68,11680,1],[69,12360,1],[70,12040,1],[71,11720,1],[72,4000,0],[73,3240,0],[74,12240,1],[75,12280,1],[76,12720,1],[77,1680,2],[78,3240,2],[79,3440,2],[80,2640,2],[81,3240,2],[82,7400,2],[83,12400,1],[84,12720,1],[85,11800,1],[86,5040,0],[87,4480,0],[88,15200,1],[89,14480,1],[90,11880,1],[91,11240,1],[92,4360,1],[93,4600,0],[94,3880,0],[95,13600,1],[96,12680,1],[97,12320,1],[98,14000,1],[99,13640,1],[100,4040,0],[101,3480,0],[102,14480,1],[103,13080,1],[104,12240,1],[105,13160,1],[106,13560,1],[107,4680,0],[108,4240,0],[109,14200,1],[110,14280,1],[111,13080,1],[112,12600,1],[113,10360,1],[114,7520,0],[115,4120,0],[116,12760,1],[117,13440,1],[118,12920,1],[119,13880,1],[120,6440,1],[121,6960,0],[122,4800,0],[123,14640,1],[124,13080,1],[125,13680,1],[126,13840,1],[127,13400,1],[128,5800,0],[129,4040,0],[130,14960,1],[131,14320,1],[132,13440,1],[133,4600,1],[134,13520,1],[135,6520,0],[136,3840,0],[137,14280,1],[138,14840,1],[139,13920,1],[140,13560,1],[141,13480,1],[142,9600,0],[143,4120,0],[144,13200,1],[145,10720,1],[146,3920,2],[147,11840,1],[148,11640,1],[149,4480,0],[150,4160,0],[151,6720,1],[152,12840,1],[153,13360,1],[154,13760,1],[155,13400,1],[156,4920,0],[157,4160,0],[158,14440,1],[159,15560,1],[160,14560,1],[161,13160,1],[162,12560,1],[163,4440,0],[164,3840,0],[165,13000,1],[166,4920,2],[167,14360,1],[168,14320,1],[169,13840,1],[170,4120,0],[171,4560,0],[172,13200,1],[173,13160,1],[174,12440,1],[175,12960,1],[176,12840,1],[177,3800,0],[178,3640,0],[179,13240,1],[180,13240,1],[181,13440,1],[182,11720,1],[183,14360,1],[184,5240,0],[185,4600,0],[186,14000,1],[187,14120,1],[188,12560,1],[189,12600,1],[190,11960,1],[191,4240,0],[192,4120,0],[193,12880,1],[194,13400,1],[195,13600,1],[196,12520,1]]};
+  var YEARS = ['2020','2021','2022','2023','2024','2025','2026'];
+  var YC = {'2020':'#33415e','2021':'#3d5578','2022':'#4a6d94','2023':'#5c88ae','2024':'#8b97ab','2025':'#ffb63d','2026':'#00d4ff'};
+  var MON = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+
+  function lineChart(elId, series, opt){
+    var W=640,H=252,x0=38,x1=628,y0=16,y1=196;
+    var ymin=opt.ymin,ymax=opt.ymax;
+    function X(i){ return x0 + i*(x1-x0)/11; }
+    function Y(v){ return y1 - (v-ymin)/(ymax-ymin)*(y1-y0); }
+    var s='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;display:block;">';
+    // gridlines
+    for(var g=0; g<=4; g++){
+      var gv = ymin + g*(ymax-ymin)/4, gy=Y(gv);
+      s+='<line x1="'+x0+'" y1="'+gy+'" x2="'+x1+'" y2="'+gy+'" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>';
+      s+='<text x="'+(x0-6)+'" y="'+(gy+3.5)+'" font-size="9.5" fill="#5a6579" text-anchor="end">'+(Math.round(gv*10)/10)+'</text>';
+    }
+    // target line
+    var ty=Y(opt.target);
+    s+='<line x1="'+x0+'" y1="'+ty+'" x2="'+x1+'" y2="'+ty+'" stroke="#ff8b96" stroke-width="1.6" stroke-dasharray="6 5" opacity="0.85"/>';
+    s+='<text x="'+(x1-2)+'" y="'+(ty-5)+'" font-size="10" fill="#ff8b96" text-anchor="end" font-weight="700">TARGET '+opt.target+'</text>';
+    // month labels
+    for(var i=0;i<12;i++) s+='<text x="'+X(i)+'" y="'+(H-38)+'" font-size="9.5" fill="#5a6579" text-anchor="middle">'+MON[i]+'</text>';
+    // year lines
+    YEARS.forEach(function(y){
+      var v=series[y]; if(!v) return;
+      var pts=[], last=null;
+      for(var i=0;i<12;i++){ if(v[i]!=null){ pts.push(X(i)+','+Y(v[i])); last={x:X(i),y:Y(v[i])}; } }
+      if(!pts.length) return;
+      var hot = (y==='2026'||y==='2025');
+      s+='<polyline points="'+pts.join(' ')+'" fill="none" stroke="'+YC[y]+'" stroke-width="'+(y==='2026'?3:(y==='2025'?2.2:1.5))+'" opacity="'+(hot?1:0.75)+'" stroke-linejoin="round" stroke-linecap="round"/>';
+      if(hot && last) s+='<circle cx="'+last.x+'" cy="'+last.y+'" r="3.5" fill="'+YC[y]+'"/>';
+    });
+    s+='</svg>';
+    // legend
+    s+='<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:2px;">'+YEARS.map(function(y){
+      return '<span style="display:inline-flex;align-items:center;gap:5px;font-size:10.5px;color:#8b97ab;"><span style="width:14px;height:3px;border-radius:2px;background:'+YC[y]+';display:inline-block;"></span>'+y+'</span>';
+    }).join('')+'</div>';
+    document.getElementById(elId).innerHTML=s;
+  }
+
+  lineChart('enpi-chart-listrik', D.kwhM2, {ymin:6, ymax:16, target:15});
+  lineChart('enpi-chart-air',     D.loh,   {ymin:0, ymax:75, target:53});
+
+  // ── Daily scatter 2026 ──
+  (function(){
+    var W=640,H=216,x0=34,x1=630,y0=12,y1=182,ymax=16000;
+    var n=197;
+    function X(i){ return x0 + i*(x1-x0)/(n-1); }
+    function Y(v){ return y1 - v/ymax*(y1-y0); }
+    var s='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;display:block;">';
+    [4000,8000,12000,16000].forEach(function(gv){
+      s+='<line x1="'+x0+'" y1="'+Y(gv)+'" x2="'+x1+'" y2="'+Y(gv)+'" stroke="rgba(255,255,255,0.05)"/>';
+      s+='<text x="'+(x0-5)+'" y="'+(Y(gv)+3)+'" font-size="9" fill="#5a6579" text-anchor="end">'+(gv/1000)+'k</text>';
+    });
+    s+='<line x1="'+x0+'" y1="'+Y(12250)+'" x2="'+x1+'" y2="'+Y(12250)+'" stroke="#00d4ff" stroke-dasharray="5 5" opacity="0.5" stroke-width="1.4"/>';
+    s+='<text x="'+(x1-2)+'" y="'+(Y(12250)-5)+'" font-size="9.5" fill="#00d4ff" text-anchor="end">hari kerja ±12.250</text>';
+    s+='<line x1="'+x0+'" y1="'+Y(4400)+'" x2="'+x1+'" y2="'+Y(4400)+'" stroke="#ffb63d" stroke-dasharray="5 5" opacity="0.65" stroke-width="1.4"/>';
+    s+='<text x="'+(x1-2)+'" y="'+(Y(4400)+13)+'" font-size="9.5" fill="#ffb63d" text-anchor="end">baseload ±4.400</text>';
+    var FC={1:'#00d4ff',0:'#5a6579',2:'#ff8b96'};
+    D.daily.forEach(function(p){
+      s+='<circle cx="'+X(p[0])+'" cy="'+Y(p[1])+'" r="2.3" fill="'+FC[p[2]]+'" opacity="'+(p[2]===1?0.9:0.8)+'"/>';
+    });
+    var ml=['Jan','Feb','Mar','Apr','Mei','Jun','Jul'];
+    for(var mi=0;mi<7;mi++){ var di=[0,31,59,90,120,151,181][mi]; s+='<text x="'+X(di)+'" y="'+(H-16)+'" font-size="9" fill="#5a6579">'+ml[mi]+'</text>'; }
+    s+='</svg>';
+    s+='<div style="display:flex;gap:12px;margin-top:2px;font-size:10.5px;color:#8b97ab;">'+
+       '<span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#00d4ff;margin-right:4px;"></span>Hari kerja</span>'+
+       '<span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#5a6579;margin-right:4px;"></span>Akhir pekan</span>'+
+       '<span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ff8b96;margin-right:4px;"></span>Libur nasional</span></div>';
+    document.getElementById('enpi-scatter').innerHTML=s;
+  })();
+
+  // ── Yearly table ──
+  var CH={ok:'<span class="chip-s s-ok">OK</span>',warn:'<span class="chip-s s-warn">DI AMBANG</span>',crit:'<span class="chip-s s-crit">LEWATI TARGET</span>'};
+  document.getElementById('enpi-year-body').innerHTML = D.yearly.map(function(r){
+    var cur = r[0]===2026;
+    return '<tr'+(cur?' style="background:rgba(10,132,255,0.06);"':'')+'>'+
+      '<td style="font-weight:'+(cur?'800':'600')+';">'+r[0]+(cur?' <span class="chip-s s-info">YTD</span>':'')+'</td>'+
+      '<td class="mono">'+r[1].toLocaleString('id-ID')+'</td>'+
+      '<td class="mono" style="color:'+(r[2]<=15?'var(--ok)':'#ff8b96')+';font-weight:700;">'+r[2].toFixed(2)+'</td>'+
+      '<td class="mono">'+r[3].toLocaleString('id-ID')+'</td>'+
+      '<td class="mono" style="color:'+(r[4]<=53?'var(--ok)':(r[4]<=55?'var(--warn)':'#ff8b96'))+';font-weight:700;">'+r[4].toFixed(2)+'</td>'+
+      '<td>'+CH[r[6]]+'</td></tr>';
+  }).join('');
+})();
 </script>
 
 <!-- ═══ FIREBASE LIVE DATA (hydrate dari Firestore; fallback ke data lokal) ═══ -->
