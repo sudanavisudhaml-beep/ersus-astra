@@ -16,6 +16,19 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/) & [Semantic Ver
 
 ---
 
+## [0.7.2] — 2026-07-21
+### Added
+- **Dataset EnPI AMDI 2020–2026** (`docs/data/amdi-enpi.json`) — diekstrak dari `data_EnP.xlsx`
+  (upload user): listrik kWh & kWh/m², air m³ & liter/orang/hari, biaya PLN & air (bulanan
+  2020–2026), data listrik harian 2026 (197 hari, dengan nama acara), meta gedung
+  (46.557 m² / 27.179,67 m² AC / okupansi 2.448), target EnPI (15 kWh/m²/bln; 53 L/org/hari).
+- **`docs/ENPI_ANALYSIS.md`** — profil energi tahunan, temuan kualitas data (denominator L/O/H
+  konstanta, kolom peserta kosong, break struktural Agu-2025), hasil regresi awal
+  (harian 2026: kWh = 4.403 + 7.847×hari_kerja, R²=0,83; baseload weekend ±4.400 kWh/hari;
+  ±3,2 kWh/orang/hari marginal), rekomendasi desain EnPI modul ERSUS.
+
+---
+
 ## [0.7.1] — 2026-07-20
 ### Added
 - **Favicon ERSUS** (ikon bolt) di tab browser semua halaman (`index.html`, `login.html`,
