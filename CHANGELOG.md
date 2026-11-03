@@ -19,6 +19,43 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/) & [Semantic Ver
 
 ---
 
+## [0.9.0] — 2026-11-03
+### Added
+- **Modul baru "Air & Water"**, data real 2020–2026: 4 KPI (EnPI air 63,3 L/org/hari vs target 53;
+  pemakaian 3.188 m³/bln, +19,3% vs 2024; proyeksi biaya 2026 Rp 478 jt; potensi hemat ±Rp 78 jt/thn
+  bila kembali ke target), grafik bulanan 7 tahun + garis volume setara target, biaya tahunan + tarif
+  efektif Rp/m³, heatmap pemakaian, grafik divergensi air vs listrik (indeks 2022 = 100), 3 insight.
+  Temuan: tarif efektif datar (Rp 12.621 → 12.594/m³), jadi kenaikan biaya 100% berasal dari volume.
+### Changed
+- **SEU Analysis** dirombak: kWh & Rp per SEU dihitung dari konsumsi real (2025 aktual / 2026 run-rate,
+  bisa dipilih) × tarif efektif Rp 1.184/kWh (tagihan PLN 2025 ÷ kWh 2025); grafik Pareto 80/20;
+  **simulator 5 lever penghematan** (slider) dengan sumber angka eksplisit, data terukur vs asumsi.
+  Lever baseload memakai data harian terukur (4.400 kWh × 121 hari non-kerja).
+- **Asset Monitor**: kartu bisa diklik untuk membuka panel diagnosis ERSUS, rekomendasi, anomali terkait,
+  dan **work order** (buat WO, tersimpan + tercatat di audit trail).
+- **Anomaly Center**: **workflow corrective action** Aktif → Acknowledge → Monitoring → Resolve
+  (catatan wajib) → Resolved, plus "buka kembali"; filter status, KPI waste terbuka, timeline riwayat,
+  badge anomali kritis ter-update otomatis. Write-back ke Firestore (`updateDoc` + `arrayUnion`) saat
+  login Firebase; fallback simpan lokal.
+- **Governance & Reporting**: tabel kinerja bulanan real per tahun (2020–2026) untuk dua indikator EnPI,
+  **emisi Scope 2** (faktor emisi dapat diubah Admin; default 0,87 kgCO₂e/kWh grid Jamali, perlu
+  verifikasi KESDM), kesiapan ISO 50001 dinilai jujur (58%), **audit trail**, dan **6 export yang
+  berfungsi**: Laporan Energi & Air (PDF via print), Ringkasan Emisi (PDF), Data Bulanan / Corrective
+  Action Register / Work Order / Audit Trail (CSV `;` + desimal koma, siap Excel Indonesia).
+  Menggantikan tabel simulasi lama dan tombol placeholder "Segera".
+- Overview: KPI EnPI listrik diganti nilai real (9,61 kWh/m²; sebelumnya angka simulasi 13,1).
+- **Role gating**: aksi anomali & work order hanya untuk Super Admin / Admin / Energy Manager;
+  Operator/Viewer read-only (tetap bisa melihat riwayat & export); faktor emisi hanya Admin+.
+- `firebase/firestore.rules`: koleksi `audit` (create oleh pemilik, immutable) dan `workorders`.
+- `firebase/seed.html`: anomali diberi tautan `asset`; changelog doc → v0.9.0.
+### Notes
+- Breakdown air per meteran PAM 1–6 (sheet *PAM harian 26*) belum diekstrak: file Excel hilang saat
+  worker restart. Upload ulang untuk menambahkannya ke modul Air.
+- Verifikasi: 14/14 uji end-to-end lolos (semua modul, alur ack→resolve, WO, export CSV/PDF,
+  persistensi setelah reload, role Operator read-only, tanpa page error).
+
+---
+
 ## [0.8.0] — 2026-07-21
 ### Changed
 - **Modul "EnPI & Baseline" dibangun ulang dengan data REAL AMDI 2020–2026**

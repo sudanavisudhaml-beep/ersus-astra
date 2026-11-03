@@ -68,6 +68,21 @@ service cloud.firestore {
       allow write: if isEnergy();
     }
 
+    // ── audit trail: semua role login boleh menulis jejaknya sendiri; tidak bisa diubah/dihapus ─
+    match /audit/{entryId} {
+      allow read:   if canRead();
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // ── work order: Energy Manager+ membuat & memperbarui ─
+    match /workorders/{woId} {
+      allow read:   if canRead();
+      allow create: if isEnergy() && request.resource.data.uid == request.auth.uid;
+      allow update: if isEnergy();
+      allow delete: if isSuperAdmin();
+    }
+
     // ── changelog (version log di DB): baca semua, tulis Admin+ ─
     match /changelog/{version} {
       allow read:  if canRead();
